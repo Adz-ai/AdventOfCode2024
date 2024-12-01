@@ -50,12 +50,12 @@ func Part2(input []string) int {
 }
 
 func Part1(input []string) int {
-	line1Int, line2Int := splitPuzzleInputToTwoSortedLines(input)
+	l1, l2 := splitPuzzleInputToTwoSortedLines(input)
 
 	var totalDistance int
 
-	for i := 0; i < len(line1Int); i++ {
-		distance := line1Int[i] - line2Int[i]
+	for i := 0; i < len(l1); i++ {
+		distance := l1[i] - l2[i]
 		if distance < 0 {
 			distance = distance * -1
 		}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
@@ -13,7 +14,8 @@ func ParseTextFile(day, filename string) ([]string, error) {
 	if err != nil {
 		log.Fatal(err)
 	}
-	inputPath := fmt.Sprintf("%s/%s/%s.txt", pathToWorkingDir, day, filename)
+
+	inputPath := filepath.Join(pathToWorkingDir, day, fmt.Sprintf("%s.txt", filename))
 	file, err := os.Open(inputPath)
 	if err != nil {
 		return nil, err
