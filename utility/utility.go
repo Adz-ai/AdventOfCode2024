@@ -1,30 +1,44 @@
 package utility
 
 import (
+	"bufio"
+	"fmt"
 	"log"
 	"os"
+	"strconv"
 )
 
-func ParseTextFile(fileName string) []string {
-	file, err := os.Open(fileName)
+func ParseTextFile(day, filename string) ([]string, error) {
+	pathToWorkingDir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer func(file *os.File) {
-		err := file.Close()
+	inputPath := fmt.Sprintf("%s/%s/%s.txt", pathToWorkingDir, day, filename)
+	file, err := os.Open(inputPath)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	var lines []string
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		lines = append(lines, scanner.Text())
+	}
+	if err := scanner.Err(); err != nil {
+		return nil, err
+	}
+	return lines, nil
+}
+
+func SliceOfStringsToInt(input []string) []int {
+	var result []int
+	for _, line := range input {
+		i, err := strconv.Atoi(line)
 		if err != nil {
 			log.Fatal(err)
 		}
-	}(file)
-
-	var lines []string
-	for {
-		var line string
-		_, err := file.Read([]byte(line))
-		if err != nil {
-			break
-		}
-		lines = append(lines, line)
+		result = append(result, i)
 	}
-	return lines
+	return result
 }
