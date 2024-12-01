@@ -30,5 +30,5 @@ go.work.sum
 
 
 # ignore aoc input file as per https://www.reddit.com/r/adventofcode/comments/18an94z/psa_dont_share_your_inputs_even_in_your_github/
-*/day*/input.txt
+input.txt
 
