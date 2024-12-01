@@ -32,13 +32,11 @@ func countNumberofTimesValuesIsInSlice(slice []int) map[int]int {
 	return uniqueMap
 }
 
-func compareTwoMapsAndGenerateSimilarityScore(m1, m2 map[int]int) int {
+func compareAndGenerateSimilarityScore(l1 []int, m2 map[int]int) int {
 	var similarityScore int
-	for k, v := range m1 {
-		if v2, ok := m2[k]; ok {
-			if v2 == v {
-				similarityScore = similarityScore + ((k * v) * v)
-			}
+	for i := 0; i < len(l1); i++ {
+		if v2, ok := m2[l1[i]]; ok {
+			similarityScore = similarityScore + (l1[i] * v2)
 		}
 	}
 	return similarityScore
@@ -46,9 +44,8 @@ func compareTwoMapsAndGenerateSimilarityScore(m1, m2 map[int]int) int {
 
 func Part2(input []string) int {
 	l1, l2 := splitPuzzleInputToTwoSortedLines(input)
-	m1 := countNumberofTimesValuesIsInSlice(l1)
 	m2 := countNumberofTimesValuesIsInSlice(l2)
-	return compareTwoMapsAndGenerateSimilarityScore(m1, m2)
+	return compareAndGenerateSimilarityScore(l1, m2)
 
 }
 
