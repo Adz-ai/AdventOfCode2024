@@ -24,7 +24,7 @@ func splitPuzzleInputToTwoSortedLines(input []string) ([]int, []int) {
 	return line1Int, line2Int
 }
 
-func countNumberofTimesValuesIsInSlice(slice []int) map[int]int {
+func countNumberOfTimesValuesIsInSlice(slice []int) map[int]int {
 	uniqueMap := make(map[int]int)
 	for _, value := range slice {
 		uniqueMap[value]++
@@ -44,7 +44,7 @@ func compareAndGenerateSimilarityScore(l1 []int, m2 map[int]int) int {
 
 func Part2(input []string) int {
 	l1, l2 := splitPuzzleInputToTwoSortedLines(input)
-	m2 := countNumberofTimesValuesIsInSlice(l2)
+	m2 := countNumberOfTimesValuesIsInSlice(l2)
 	return compareAndGenerateSimilarityScore(l1, m2)
 
 }
@@ -53,7 +53,6 @@ func Part1(input []string) int {
 	l1, l2 := splitPuzzleInputToTwoSortedLines(input)
 
 	var totalDistance int
-
 	for i := 0; i < len(l1); i++ {
 		distance := l1[i] - l2[i]
 		if distance < 0 {
