@@ -29,7 +29,7 @@ func isSafe(report []int) bool {
 	return true
 }
 
-func Part2(input []string) int {
+func part2(input []string) int {
 	safeCounter := 0
 
 	for _, line := range input {
@@ -55,7 +55,7 @@ func Part2(input []string) int {
 	return safeCounter
 }
 
-func Part1(input []string) int {
+func part1(input []string) int {
 	safeCounter := 0
 
 	for _, line := range input {
@@ -75,6 +75,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	fmt.Println(Part1(input))
-	fmt.Println(Part2(input))
+	fmt.Println(part1(input))
+	fmt.Println(part2(input))
 }

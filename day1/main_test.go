@@ -12,9 +12,9 @@ func TestPart1(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := 11
-	got := Part1(input)
+	got := part1(input)
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Part1() = %v, want %v", got, want)
+		t.Errorf("part1() = %v, want %v", got, want)
 	}
 }
 
@@ -24,8 +24,8 @@ func TestPart2(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := 31
-	got := Part2(input)
+	got := part2(input)
 	if !reflect.DeepEqual(got, want) {
-		t.Errorf("Part2() = %v, want %v", got, want)
+		t.Errorf("part2() = %v, want %v", got, want)
 	}
 }
