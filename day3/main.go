@@ -8,13 +8,13 @@ import (
 	"strconv"
 )
 
-func part2(inputs []string) int {
+func part2(input []string) int {
 	pattern := `(mul\((\d+),(\d+)\)|do\(\)|don't\(\))`
 	re := regexp.MustCompile(pattern)
 	enabled := true
 	total := 0
-	for _, input := range inputs {
-		matches := re.FindAllStringSubmatch(input, -1)
+	for _, line := range input {
+		matches := re.FindAllStringSubmatch(line, -1)
 		for _, match := range matches {
 			if match[0] == "do()" {
 				enabled = true
@@ -40,8 +40,8 @@ func part1(input []string) int {
 	pattern := `mul\((\d+),(\d+)\)`
 	re := regexp.MustCompile(pattern)
 	total := 0
-	for i := 0; i < len(input); i++ {
-		matches := re.FindAllStringSubmatch(input[i], -1)
+	for _, line := range input {
+		matches := re.FindAllStringSubmatch(line, -1)
 
 		for _, match := range matches {
 			x, err := strconv.Atoi(match[1])
