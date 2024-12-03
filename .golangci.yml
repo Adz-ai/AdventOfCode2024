@@ -4,22 +4,33 @@ run:
 
 linters:
   enable:
-    - govet         # Reports suspicious constructs
-    - staticcheck   # Includes a collection of best-practice checks
+    - copyloopvar   # Warns about copy loop variables
+    - dupl          # Detects duplicated code
+    - errcheck      # Checks that error return values are used
+    - errname       # Checks that error names are consistent
+    - forbidigo      # Checks for forbidden imports
+    - goconst       # Suggests using constants for repeated literals
+    - goconst       # Suggests using constants for repeated literals
+    - gocritic       # Checks for common Go issues
+    - gocyclo       # Reports functions with high complexity
+    - gofumpt       # Checks for formatting issues
     - gofmt         # Checks for formatting issues
     - goimports     # Ensures imports are sorted and formatted
-    - ineffassign   # Detects assignments to unused variables
-    - unused        # Checks for unused code
+    - gosec         # Finds potential security issues
     - gosimple      # Simplifies Go code
-    - prealloc      # Suggests preallocating slices
-    - gocyclo       # Reports functions with high complexity
-    - errcheck      # Checks that error return values are used
-    - unparam       # Finds unused function parameters
+    - govet         # Reports suspicious constructs
+    - ineffassign   # Detects assignments to unused variables
     - lll           # Enforces line length limit
     - nakedret      # Warns about naked returns in functions
-    - goconst       # Suggests using constants for repeated literals
-    - gosec         # Finds potential security issues
     - nolintlint    # Checks that //nolint directives are used properly
+    - prealloc      # Suggests preallocating slices
+    - staticcheck   # Includes a collection of best-practice checks
+    - unparam       # Finds unused function parameters
+    - unused        # Checks for unused code
+    - mirror        # Checks for mirror imports
+    - misspell      # Checks for misspelled words
+    - nakedret      # Warns about naked returns in functions
+    - usestdlibvars # Checks for variable names that collide with names in the standard library
 
 linters-settings:
   gocyclo:
