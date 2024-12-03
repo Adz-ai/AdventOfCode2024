@@ -8,6 +8,25 @@ import (
 	"strconv"
 )
 
+func processMultiplication(match []string) (int, error) {
+	first, second := 1, 2
+	if len(match) > 3 {
+		first, second = 2, 3
+	}
+
+	x, err := strconv.Atoi(match[first])
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse first number: %w", err)
+	}
+
+	y, err := strconv.Atoi(match[second])
+	if err != nil {
+		return 0, fmt.Errorf("failed to parse second number: %w", err)
+	}
+
+	return x * y, nil
+}
+
 func part2(input []string) int {
 	pattern := `(mul\((\d+),(\d+)\)|do\(\)|don't\(\))`
 	re := regexp.MustCompile(pattern)
@@ -16,20 +35,19 @@ func part2(input []string) int {
 	for _, line := range input {
 		matches := re.FindAllStringSubmatch(line, -1)
 		for _, match := range matches {
-			if match[0] == "do()" {
+			switch match[0] {
+			case "do()":
 				enabled = true
-			} else if match[0] == "don't()" {
+			case "don't()":
 				enabled = false
-			} else if match[1] != "" && enabled {
-				x, err := strconv.Atoi(match[2])
-				if err != nil {
-					log.Fatal(err)
+			default:
+				if match[1] != "" && enabled {
+					if result, err := processMultiplication(match); err != nil {
+						log.Fatal(err)
+					} else {
+						total += result
+					}
 				}
-				y, err := strconv.Atoi(match[3])
-				if err != nil {
-					log.Fatal(err)
-				}
-				total = total + (x * y)
 			}
 		}
 	}
@@ -42,17 +60,12 @@ func part1(input []string) int {
 	total := 0
 	for _, line := range input {
 		matches := re.FindAllStringSubmatch(line, -1)
-
 		for _, match := range matches {
-			x, err := strconv.Atoi(match[1])
-			if err != nil {
+			if result, err := processMultiplication(match); err != nil {
 				log.Fatal(err)
+			} else {
+				total += result
 			}
-			y, err := strconv.Atoi(match[2])
-			if err != nil {
-				log.Fatal(err)
-			}
-			total = total + (x * y)
 		}
 	}
 	return total
