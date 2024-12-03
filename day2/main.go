@@ -71,7 +71,7 @@ func part1(input []string) int {
 }
 
 func main() {
-	input, err := utility.ParseTextFile("day2", "input")
+	input, err := utility.ParseTextFile("input")
 	if err != nil {
 		log.Fatal(err)
 	}

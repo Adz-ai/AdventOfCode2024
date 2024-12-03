@@ -9,13 +9,13 @@ import (
 	"strconv"
 )
 
-func ParseTextFile(day, filename string) ([]string, error) {
+func ParseTextFile(filename string) ([]string, error) {
 	pathToWorkingDir, err := os.Getwd()
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	inputPath := filepath.Join(pathToWorkingDir, day, fmt.Sprintf("%s.txt", filename))
+	inputPath := filepath.Join(pathToWorkingDir, fmt.Sprintf("%s.txt", filename))
 	file, err := os.Open(inputPath)
 	if err != nil {
 		return nil, err

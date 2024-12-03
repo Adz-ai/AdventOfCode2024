@@ -7,7 +7,7 @@ import (
 )
 
 func TestPart1(t *testing.T) {
-	input, err := utility.ParseTextFile("day3", "test")
+	input, err := utility.ParseTextFile("test")
 	if err != nil {
 		t.Fatal(err)
 	}

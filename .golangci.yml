@@ -1,0 +1,34 @@
+run:
+  timeout: 5m
+  issues-exit-code: 1 # Exit code for issues, 0 means no linting issues
+
+linters:
+  enable:
+    - govet         # Reports suspicious constructs
+    - staticcheck   # Includes a collection of best-practice checks
+    - gofmt         # Checks for formatting issues
+    - goimports     # Ensures imports are sorted and formatted
+    - ineffassign   # Detects assignments to unused variables
+    - unused        # Checks for unused code
+    - gosimple      # Simplifies Go code
+    - prealloc      # Suggests preallocating slices
+    - gocyclo       # Reports functions with high complexity
+    - errcheck      # Checks that error return values are used
+    - unparam       # Finds unused function parameters
+    - lll           # Enforces line length limit
+    - nakedret      # Warns about naked returns in functions
+    - goconst       # Suggests using constants for repeated literals
+    - gosec         # Finds potential security issues
+    - nolintlint    # Checks that //nolint directives are used properly
+
+linters-settings:
+  gocyclo:
+    min-complexity: 10 # Report functions with complexity over this threshold
+  lll:
+    line-length: 120 # Maximum line length
+  prealloc:
+    simple: true     # Preallocate slices if possible
+  errcheck:
+    check-type-assertions: true # Check for ignored type assertion errors
+
+

@@ -7,7 +7,7 @@ import (
 )
 
 func TestPart1(t *testing.T) {
-	input, err := utility.ParseTextFile("day2", "test")
+	input, err := utility.ParseTextFile("test")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -19,7 +19,7 @@ func TestPart1(t *testing.T) {
 }
 
 func TestPart2(t *testing.T) {
-	input, err := utility.ParseTextFile("day2", "test")
+	input, err := utility.ParseTextFile("test")
 	if err != nil {
 		t.Fatal(err)
 	}
