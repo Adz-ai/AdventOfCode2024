@@ -39,7 +39,7 @@ func ParseTextFile(day, filename string) ([]string, error) {
 }
 
 func SliceOfStringsToInt(input []string) []int {
-	var result []int
+	result := make([]int, 0, len(input))
 	for _, line := range input {
 		i, err := strconv.Atoi(line)
 		if err != nil {

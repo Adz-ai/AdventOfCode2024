@@ -9,7 +9,8 @@ import (
 )
 
 func splitPuzzleInputToTwoSortedLines(input []string) ([]int, []int) {
-	var line1, line2 []string
+	line1 := make([]string, 0)
+	line2 := make([]string, 0)
 
 	for _, line := range input {
 		split := strings.Split(line, "  ")
@@ -36,7 +37,7 @@ func compareAndGenerateSimilarityScore(l1 []int, m2 map[int]int) int {
 	var similarityScore int
 	for i := 0; i < len(l1); i++ {
 		if v2, ok := m2[l1[i]]; ok {
-			similarityScore = similarityScore + (l1[i] * v2)
+			similarityScore += l1[i] * v2
 		}
 	}
 	return similarityScore
@@ -56,7 +57,7 @@ func part1(input []string) int {
 	for i := 0; i < len(l1); i++ {
 		distance := l1[i] - l2[i]
 		if distance < 0 {
-			distance = distance * -1
+			distance *= -1
 		}
 		totalDistance += distance
 	}
