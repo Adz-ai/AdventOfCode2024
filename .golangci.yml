@@ -13,7 +13,6 @@ linters:
     - goconst       # Suggests using constants for repeated literals
     - gocritic       # Checks for common Go issues
     - gocyclo       # Reports functions with high complexity
-    - gofumpt       # Checks for formatting issues
     - gofmt         # Checks for formatting issues
     - goimports     # Ensures imports are sorted and formatted
     - gosec         # Finds potential security issues
