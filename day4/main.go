@@ -95,10 +95,10 @@ func getChar(pos Position, grid []string) rune {
 
 func part2(input []string) int {
 	patterns := []Pattern{
-		{'M', 'M', 'S', 'S'}, // M.M.S.S pattern
-		{'S', 'S', 'M', 'M'}, // S.S.M.M pattern
-		{'M', 'S', 'M', 'S'}, // M.S.M.S pattern
-		{'S', 'M', 'S', 'M'}, // S.M.S.M pattern
+		{'M', 'M', 'S', 'S'},
+		{'S', 'S', 'M', 'M'},
+		{'M', 'S', 'M', 'S'},
+		{'S', 'M', 'S', 'M'},
 	}
 
 	count := 0
