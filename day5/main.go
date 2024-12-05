@@ -20,56 +20,92 @@ type Node struct {
 	outNodes map[int]bool
 }
 
-// parseInput processes the input file and returns two slices:
-// - rules: collection of page ordering rules
-// - updates: groups of pages that need to be printed
-// The function handles malformed input by skipping invalid entries.
-func parseInput(lines []string) ([]Rule, [][]int) {
-	var rules []Rule
-	var updates [][]int
+// parseRule attempts to parse a single rule from a line of text.
+// Returns the parsed rule and whether parsing was successful.
+func parseRule(line string) (Rule, bool) {
+	parts := strings.Split(strings.TrimSpace(line), "|")
+	if len(parts) != 2 {
+		return Rule{}, false
+	}
 
+	var before, after int
+	if _, err := fmt.Sscanf(parts[0], "%d", &before); err != nil {
+		return Rule{}, false
+	}
+	if _, err := fmt.Sscanf(parts[1], "%d", &after); err != nil {
+		return Rule{}, false
+	}
+
+	return Rule{before, after}, true
+}
+
+// parseUpdate attempts to parse a comma-separated list of page numbers.
+// Returns the parsed update slice and whether parsing was successful.
+func parseUpdate(line string) ([]int, bool) {
+	if line = strings.TrimSpace(line); line == "" {
+		return nil, false
+	}
+
+	var update []int
+	for _, numStr := range strings.Split(line, ",") {
+		var num int
+		if _, err := fmt.Sscanf(numStr, "%d", &num); err != nil {
+			continue
+		}
+		update = append(update, num)
+	}
+
+	return update, len(update) > 0
+}
+
+// parseRules processes the rules section of the input.
+// Returns the parsed rules and the index where rules section ends.
+func parseRules(lines []string) ([]Rule, int) {
+	var rules []Rule
 	i := 0
+
 	for ; i < len(lines); i++ {
 		line := strings.TrimSpace(lines[i])
 		if line == "" {
-			i++
+			i++ // Skip the empty line
 			break
 		}
 
-		parts := strings.Split(line, "|")
-		if len(parts) != 2 {
-			continue
+		if rule, ok := parseRule(line); ok {
+			rules = append(rules, rule)
 		}
-
-		var before, after int
-		if _, err := fmt.Sscanf(parts[0], "%d", &before); err != nil {
-			continue
-		}
-		if _, err := fmt.Sscanf(parts[1], "%d", &after); err != nil {
-			continue
-		}
-		rules = append(rules, Rule{before, after})
 	}
 
-	for ; i < len(lines); i++ {
-		line := strings.TrimSpace(lines[i])
-		if line == "" {
-			continue
-		}
+	return rules, i
+}
 
-		var update []int
-		for _, numStr := range strings.Split(line, ",") {
-			var num int
-			if _, err := fmt.Sscanf(numStr, "%d", &num); err != nil {
-				continue
-			}
-			update = append(update, num)
-		}
-		if len(update) > 0 {
+// parseUpdates processes the updates section of the input.
+// Returns the parsed updates slice.
+func parseUpdates(lines []string, startIdx int) [][]int {
+	var updates [][]int
+
+	for i := startIdx; i < len(lines); i++ {
+		if update, ok := parseUpdate(lines[i]); ok {
 			updates = append(updates, update)
 		}
 	}
 
+	return updates
+}
+
+// parseInput processes the input file and returns two slices:
+//   - rules: collection of page ordering rules, where each rule specifies which page
+//     must come before another
+//   - updates: groups of pages that need to be printed in the correct order
+//
+// The input file has two sections:
+// 1. Rules section: one rule per line in format "X|Y" (X must come before Y)
+// 2. Updates section: comma-separated lists of page numbers to be ordered
+//
+// Sections are separated by an empty line.
+func parseInput(lines []string) ([]Rule, [][]int) {
+	rules, updateStartIdx := parseRules(lines)
+	updates := parseUpdates(lines, updateStartIdx)
 	return rules, updates
 }
 
