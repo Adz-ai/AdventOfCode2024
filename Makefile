@@ -40,20 +40,30 @@ lint: $(LINT_BIN)
 		fi; \
 	done
 
-
-
 $(LINT_BIN):
 	@echo "##### Installing golangci-lint... #####"
 	@mkdir -p $(TOOLS_DIR)
 	@curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(TOOLS_DIR)
 	@echo "golangci-lint installed at $(LINT_BIN)"
 
-# Help target
+benchmark:
+	@echo "##### Measuring performance of each solution for each day... #####"
+	@for dir in $(shell find . -type d -name "day*" | sort); do \
+		if [ -f $$dir/main.go ]; then \
+			echo "Benchmarking $$dir/main.go..."; \
+			cd $$dir && { env time -p go run main.go || exit $$?; } 2>&1; \
+			cd $(ROOT_DIR); \
+		else \
+			echo "No main.go found in $$dir, skipping..."; \
+		fi; \
+	done
+
+
 help:
 	@echo "Available targets:"
-	@echo "  help    Display this help message"
-	@echo "  all     Run all main.go and main_test.go files in each day folder"
-	@echo "  run     Run all main.go files in each day folder"
-	@echo "  test    Run all tests in each day folder"
-	@echo "  lint    Run golangci-lint in each day folder"
-	@echo "  $(LINT_BIN) Retrieve and install golangci-lint in tools directory"
+	@echo "  help    	Display this help message"
+	@echo "  all     	Run all main.go and main_test.go files in each day folder"
+	@echo "  run     	Run all main.go files in each day folder"
+	@echo "  test    	Run all tests in each day folder"
+	@echo "  lint    	Run golangci-lint in each day folder"
+	@echo "  benchmark 	Measure performance of each solution for each day"
