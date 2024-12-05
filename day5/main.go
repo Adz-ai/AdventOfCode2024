@@ -46,7 +46,7 @@ func parseUpdate(line string) ([]int, bool) {
 		return nil, false
 	}
 
-	var update []int
+	update := make([]int, 0)
 	for _, numStr := range strings.Split(line, ",") {
 		var num int
 		if _, err := fmt.Sscanf(numStr, "%d", &num); err != nil {
@@ -67,7 +67,7 @@ func parseRules(lines []string) ([]Rule, int) {
 	for ; i < len(lines); i++ {
 		line := strings.TrimSpace(lines[i])
 		if line == "" {
-			i++ // Skip the empty line
+			i++
 			break
 		}
 
