@@ -21,7 +21,7 @@ test:
 	@for dir in $(shell find . -type d -name "day*" | sort); do \
 		if [ -f $$dir/main_test.go ]; then \
 			echo "Running $$dir/main_test.go..."; \
-			cd $$dir && go test -v; \
+			cd $$dir && go test -v || exit $$?; \
 			cd $(ROOT_DIR); \
 		else \
 			echo "No main_test.go found in $$dir, skipping..."; \
@@ -33,7 +33,7 @@ lint: $(LINT_BIN)
 	@for dir in $(shell find . -type d -name "day*" | sort); do \
 		if [ -n "$$(ls $$dir/*.go 2>/dev/null)" ]; then \
 			echo "Linting Go files in $$dir..."; \
-			cd $$dir && $(LINT_BIN) run --config $(ROOT_DIR)/.golangci.yml .; \
+			cd $$dir && $(LINT_BIN) run --config $(ROOT_DIR)/.golangci.yml . || exit $$?; \
 			cd $(ROOT_DIR); \
 		else \
 			echo "No Go files found in $$dir, skipping..."; \
