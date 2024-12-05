@@ -1,8 +1,9 @@
 ROOT_DIR := $(shell pwd)
 TOOLS_DIR := $(ROOT_DIR)/tools
 LINT_BIN := $(TOOLS_DIR)/golangci-lint
+SESSION_TOKEN := $(AOC_SESSION_TOKEN) # Ensure to export this in your environment
 
-all: test lint run
+all: test lint fetch-input run
 
 run:
 	@echo "##### Running all main.go files in each day folder... #####"
@@ -58,6 +59,29 @@ benchmark:
 		fi; \
 	done
 
+fetch-input:
+	@echo "##### Fetching input for each day folder... #####"
+	@if [ -z "$(AOC_SESSION_TOKEN)" ]; then \
+		echo "Error: AOC_SESSION_TOKEN is not set. Please export it in your environment."; \
+		exit 1; \
+	fi
+	@YEAR=2024; \
+	for dir in $(shell find . -type d -name "day*" | sort); do \
+		DAY=$$(echo $$dir | grep -o '[0-9]*'); \
+		if [ -n "$$DAY" ]; then \
+			if [ -f $$dir/input.txt ]; then \
+				echo "Input for Day $$DAY already exists. Skipping..."; \
+			else \
+				URL="https://adventofcode.com/$$YEAR/day/$$DAY/input"; \
+				echo "Fetching input for Day $$DAY from $$URL..."; \
+				curl -sSfL --cookie "session=$(AOC_SESSION_TOKEN)" $$URL -o $$dir/input.txt || { \
+					echo "Failed to fetch input for Day $$DAY from $$URL."; exit 1; }; \
+			fi; \
+		else \
+			echo "Invalid day folder: $$dir. Skipping..."; \
+		fi; \
+	done
+
 
 help:
 	@echo "Available targets:"
@@ -67,3 +91,5 @@ help:
 	@echo "  test    	Run all tests in each day folder"
 	@echo "  lint    	Run golangci-lint in each day folder"
 	@echo "  benchmark 	Measure performance of each solution for each day"
+	@echo "  fetch-input Fetch puzzle inputs for each day folder"
+
