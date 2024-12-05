@@ -1,6 +1,6 @@
 # AdventOfCode2024
 
-AdventOfCode2024 is a collection of solutions to the [Advent of Code 2024](https://adventofcode.com/2024) puzzles.
+AdventOfCode2024 is a collection of solutions to the [Advent of Code 2024](https://adventofcode.com/2024) puzzles. This year I chose to do it in Golang :)
 
 # How to use
 
