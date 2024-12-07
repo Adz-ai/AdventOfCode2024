@@ -33,3 +33,7 @@ input.txt
 
 # ignore linting tools dir
 tools/
+
+# ignore java out
+out/
+*.iml
