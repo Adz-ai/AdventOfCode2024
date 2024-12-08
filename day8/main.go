@@ -27,6 +27,38 @@ func isWithinBounds(p Point, bounds Point) bool {
 	return p.row >= 0 && p.col >= 0 && p.row < bounds.row && p.col < bounds.col
 }
 
+// addAntinodes adds calculated antinodes to the antinodes map based on the bounds and delta
+func addAntinodes(antinodes map[Point]bool, start Point, delta Point, bounds Point) {
+	nextPoint := Point{
+		row: start.row + delta.row,
+		col: start.col + delta.col,
+	}
+	for isWithinBounds(nextPoint, bounds) {
+		antinodes[nextPoint] = true
+		nextPoint.row += delta.row
+		nextPoint.col += delta.col
+	}
+}
+
+// processAntennas processes antennas and calculates antinodes
+func processAntennas(antinodes map[Point]bool, antennas []Point, bounds Point, includeOriginal bool) {
+	for i := 0; i < len(antennas); i++ {
+		for j := i + 1; j < len(antennas); j++ {
+			dRow := antennas[j].row - antennas[i].row
+			dCol := antennas[j].col - antennas[i].col
+
+			// Add antinodes in both directions
+			addAntinodes(antinodes, antennas[i], Point{-dRow, -dCol}, bounds)
+			addAntinodes(antinodes, antennas[j], Point{dRow, dCol}, bounds)
+
+			if includeOriginal {
+				antinodes[antennas[i]] = true
+				antinodes[antennas[j]] = true
+			}
+		}
+	}
+}
+
 func part1(input []string) int {
 	freqToAntennas := buildFrequencyMap(input)
 	antinodes := make(map[Point]bool)
@@ -39,7 +71,6 @@ func part1(input []string) int {
 					row: 2*antennas[i].row - antennas[j].row,
 					col: 2*antennas[i].col - antennas[j].col,
 				}
-
 				an2 := Point{
 					row: 2*antennas[j].row - antennas[i].row,
 					col: 2*antennas[j].col - antennas[i].col,
@@ -63,37 +94,7 @@ func part2(input []string) int {
 	bounds := Point{len(input), len(input[0])}
 
 	for _, antennas := range freqToAntennas {
-		for i := 0; i < len(antennas); i++ {
-			for j := i + 1; j < len(antennas); j++ {
-				dRow := antennas[i].row - antennas[j].row
-				dCol := antennas[i].col - antennas[j].col
-
-				nextPoint := Point{
-					row: antennas[i].row - dRow,
-					col: antennas[i].col - dCol,
-				}
-				for isWithinBounds(nextPoint, bounds) {
-					antinodes[nextPoint] = true
-					nextPoint.row -= dRow
-					nextPoint.col -= dCol
-				}
-
-				nextPoint = Point{
-					row: antennas[j].row + dRow,
-					col: antennas[j].col + dCol,
-				}
-				for isWithinBounds(nextPoint, bounds) {
-					antinodes[nextPoint] = true
-					nextPoint.row += dRow
-					nextPoint.col += dCol
-				}
-
-				if len(antennas) > 1 {
-					antinodes[antennas[i]] = true
-					antinodes[antennas[j]] = true
-				}
-			}
-		}
+		processAntennas(antinodes, antennas, bounds, true)
 	}
 	return len(antinodes)
 }
