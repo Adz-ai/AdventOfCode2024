@@ -13,64 +13,56 @@ type File struct {
 	length int
 }
 
-// Space represents a continuous free space region
+// Space represents a continuous free space region on the disk
 type Space struct {
 	start  int
 	length int
 }
 
 // parseInput takes a string input representing alternating file and space lengths
-// and returns slices of File and Space structs along with the total disk length
-// Input format: "FSFSFS" where F is file length and S is space length
-func parseInput(input string) ([]File, []Space, int) {
+// and returns a slice of File structs along with the total disk length.
+// Input format: "FSFSFS" where F is file length and S is space length.
+func parseInput(input string) ([]File, int) {
 	var files []File
-	var spaces []Space
 	pos := 0
 	fileID := 0
 	totalLength := 0
 
-	// Pre-calculate total length and allocate slices with capacity
+	// Pre-calculate total length for disk size
 	for i := 0; i < len(input); i++ {
 		length, _ := strconv.Atoi(string(input[i]))
 		totalLength += length
 	}
 
+	// Pre-allocate files slice
 	files = make([]File, 0, len(input)/2)
-	spaces = make([]Space, 0, len(input)/2)
 
-	// Parse input
+	// Parse input alternating between files and spaces
 	for i := 0; i < len(input); i++ {
 		length, _ := strconv.Atoi(string(input[i]))
 		if i%2 == 0 {
-			// File
 			files = append(files, File{
 				id:     fileID,
 				start:  pos,
 				length: length,
 			})
 			fileID++
-		} else {
-			// Space
-			spaces = append(spaces, Space{
-				start:  pos,
-				length: length,
-			})
 		}
 		pos += length
 	}
 
-	return files, spaces, totalLength
+	return files, totalLength
 }
 
-// initializeDisk sets up the initial state of the disk array based on
-// the provided files and spaces. -1 represents free space
-func initializeDisk(disk []int, files []File, spaces []Space) {
+// initialiseDisk sets up the initial state of the disk array based on
+// the provided files. -1 represents free space.
+func initialiseDisk(disk []int, files []File) {
 	// Initialize all positions to -1 (free space)
 	for i := range disk {
 		disk[i] = -1
 	}
 
-	// Place files
+	// Place files at their initial positions
 	for _, file := range files {
 		for i := 0; i < file.length; i++ {
 			disk[file.start+i] = file.id
@@ -79,7 +71,7 @@ func initializeDisk(disk []int, files []File, spaces []Space) {
 }
 
 // findContinuousSpaces scans the disk and returns a slice of Space structs
-// representing all continuous regions of free space
+// representing all continuous regions of free space.
 func findContinuousSpaces(disk []int) []Space {
 	var spaces []Space
 	start := -1
@@ -98,6 +90,7 @@ func findContinuousSpaces(disk []int) []Space {
 		}
 	}
 
+	// Handle trailing space if it exists
 	if start != -1 {
 		spaces = append(spaces, Space{start: start, length: length})
 	}
@@ -106,10 +99,10 @@ func findContinuousSpaces(disk []int) []Space {
 }
 
 // moveFileToSpace moves a file from its current location to a new position
-// on the disk, updating both the old and new locations
+// on the disk, updating both the old and new locations.
 func moveFileToSpace(disk []int, file File, newStart int) {
-	// Clear old location
 	fileID := disk[file.start]
+	// Clear old location
 	for i := 0; i < file.length; i++ {
 		disk[file.start+i] = -1
 	}
@@ -120,19 +113,16 @@ func moveFileToSpace(disk []int, file File, newStart int) {
 }
 
 // updateFreeSpaces updates the list of free spaces when a file cannot be moved,
-// potentially splitting spaces that overlap with the unmoved file
+// potentially splitting spaces that overlap with the unmoved file.
 func updateFreeSpaces(spaces []Space, file File) {
-	// Update free spaces list to account for unmoved file
 	for i := range spaces {
 		if spaces[i].start > file.start {
 			break
 		}
 		if spaces[i].start+spaces[i].length > file.start {
-			// Split the space if necessary
 			if spaces[i].start < file.start {
 				newLength := file.start - spaces[i].start
 				if spaces[i].length > newLength+file.length {
-					// Space continues after the file
 					spaces = append(spaces, Space{
 						start:  file.start + file.length,
 						length: spaces[i].length - newLength - file.length,
@@ -145,7 +135,7 @@ func updateFreeSpaces(spaces []Space, file File) {
 }
 
 // calculateChecksum computes the final checksum of the disk state by multiplying
-// each file block's position by its file ID and summing the results
+// each file block's position by its file ID and summing the results.
 func calculateChecksum(disk []int) int {
 	checksum := 0
 	for pos, fileID := range disk {
@@ -157,13 +147,12 @@ func calculateChecksum(disk []int) int {
 }
 
 // part1 solves the first part of the puzzle where individual blocks
-// are moved from right to left to the first available space
-// Returns the checksum of the final disk state
-func part1(input []string) int {
-	// Parse input into files and initialize disk
-	files, spaces, totalLength := parseInput(input[0])
+// are moved from right to left to the first available space.
+// Returns the checksum of the final disk state.
+func part1(input string) int {
+	files, totalLength := parseInput(input)
 	disk := make([]int, totalLength)
-	initializeDisk(disk, files, spaces)
+	initialiseDisk(disk, files)
 
 	// Process blocks right to left, moving each block to the leftmost available space
 	for i := len(disk) - 1; i >= 0; i-- {
@@ -174,7 +163,6 @@ func part1(input []string) int {
 		// Find leftmost free space before current position
 		for j := 0; j < i; j++ {
 			if disk[j] == -1 {
-				// Move block
 				disk[j] = disk[i]
 				disk[i] = -1
 				break
@@ -186,14 +174,12 @@ func part1(input []string) int {
 }
 
 // part2 solves the second part of the puzzle where entire files
-// are moved from right to left to the first available space that can fit them
-// Returns the checksum of the final disk state
-func part2(input []string) int {
-	files, spaces, totalLength := parseInput(input[0])
+// are moved from right to left to the first available space that can fit them.
+// Returns the checksum of the final disk state.
+func part2(input string) int {
+	files, totalLength := parseInput(input)
 	disk := make([]int, totalLength)
-	initializeDisk(disk, files, spaces)
-
-	// Create a slice of continuous free spaces
+	initialiseDisk(disk, files)
 	freeSpaces := findContinuousSpaces(disk)
 
 	// Process files in descending order of ID
@@ -204,18 +190,13 @@ func part2(input []string) int {
 		// Find the leftmost suitable space for this file
 		for j, space := range freeSpaces {
 			if space.length >= file.length && space.start < file.start {
-				// Move file to this space
 				moveFileToSpace(disk, file, space.start)
 
-				// Update the free space
-				newSpace := Space{
-					start:  space.start + file.length,
-					length: space.length - file.length,
-				}
-				if newSpace.length > 0 {
-					freeSpaces[j] = newSpace
+				// Update or remove the used space
+				if space.length > file.length {
+					freeSpaces[j].start += file.length
+					freeSpaces[j].length -= file.length
 				} else {
-					// Remove this space if fully used
 					freeSpaces = append(freeSpaces[:j], freeSpaces[j+1:]...)
 				}
 
@@ -225,7 +206,6 @@ func part2(input []string) int {
 		}
 
 		if !moved {
-			// If file couldn't move, update free spaces list to exclude its current position
 			updateFreeSpaces(freeSpaces, file)
 		}
 	}
@@ -238,6 +218,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	log.Println(part1(input))
-	log.Println(part2(input))
+	log.Println(part1(input[0]))
+	log.Println(part2(input[0]))
 }

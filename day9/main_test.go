@@ -12,7 +12,7 @@ func TestPart1(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := 1928
-	got := part1(input)
+	got := part1(input[0])
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("part1() = %v, want %v", got, want)
 	}
@@ -24,7 +24,7 @@ func TestPart2(t *testing.T) {
 		t.Fatal(err)
 	}
 	want := 2858
-	got := part2(input)
+	got := part2(input[0])
 	if !reflect.DeepEqual(got, want) {
 		t.Errorf("part2() = %v, want %v", got, want)
 	}
