@@ -2,7 +2,6 @@ package main
 
 import (
 	"aoc2024/utility"
-	"fmt"
 	"log"
 	"strconv"
 	"strings"
@@ -88,7 +87,7 @@ func part2(lines []string) int {
 func main() {
 	lines, err := utility.ParseTextFile("input")
 	if err != nil {
-		fmt.Printf("Error reading input: %v\n", err)
+		log.Fatal(err)
 		return
 	}
 	log.Println(part1(lines))
