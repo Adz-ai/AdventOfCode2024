@@ -14,7 +14,7 @@ type system struct {
 }
 
 // solve uses Cramer's rule to find the solution to the system of equations
-func (s system) solve() (a, b int64) {
+func (s system) cramersRule() (a, b int64) {
 	// Calculate determinant for the system
 	det := s.a1*s.b2 - s.a2*s.b1
 
@@ -33,7 +33,8 @@ func (s system) solve() (a, b int64) {
 	return a, b
 }
 
-func part1(input []string) int64 {
+func solve(input []string, p2 bool) int64 {
+	var offset int64 = 10000000000000
 	var total int64
 	var sys system
 
@@ -64,21 +65,31 @@ func part1(input []string) int64 {
 			parts := strings.Split(input[i], "=")
 			sys.c1, _ = strconv.ParseInt(strings.TrimRight(parts[1], ", Y"), 10, 64)
 			sys.c2, _ = strconv.ParseInt(parts[2], 10, 64)
+
+			// Offset coordinates for part 2
+			if p2 {
+				sys.c1 += offset
+				sys.c2 += offset
+			}
 		}
 		i++
 
 		// Solve the system and add to total
-		a, b := sys.solve()
-		total += 3*a + b
+		a, b := sys.cramersRule()
+		if a > 0 || b > 0 { // Only add if solution exists
+			total += 3*a + b
+		}
 	}
-
 	return total
 }
 
-func part2(lines []string) int {
-	return 0
+func part1(input []string) int64 {
+	return solve(input, false)
 }
 
+func part2(input []string) int64 {
+	return solve(input, true)
+}
 func main() {
 	lines, err := utility.ParseTextFile("input")
 	if err != nil {
