@@ -48,7 +48,7 @@ func (r *Region) getBounds(garden [][]rune) (minRow, maxRow, minCol, maxCol int)
 }
 
 // isValidTransition checks if a point and its below neighbor form a valid region transition
-func (r *Region) isValidTransition(current, below Point, rows, cols int) bool {
+func (r *Region) isValidTransition(current, below Point, rows int) bool {
 	if below.row >= rows {
 		return false
 	}
@@ -61,7 +61,7 @@ func (r *Region) isValidTransition(current, below Point, rows, cols int) bool {
 
 // countSidesFromOrientation counts sides from current orientation
 func (r *Region) countSidesFromOrientation(garden [][]rune, minRow, maxRow, minCol, maxCol int) int {
-	rows, cols := len(garden), len(garden[0])
+	rows := len(garden)
 	sides := 0
 
 	for row := minRow - 1; row <= maxRow; row++ {
@@ -70,7 +70,7 @@ func (r *Region) countSidesFromOrientation(garden [][]rune, minRow, maxRow, minC
 			current := Point{row, col}
 			below := Point{row + 1, col}
 
-			if r.isValidTransition(current, below, rows, cols) {
+			if r.isValidTransition(current, below, rows) {
 				if !inRegion {
 					sides++
 					inRegion = true
