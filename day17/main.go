@@ -35,6 +35,17 @@ func partOne(program []uint64, seed uint64) string {
 	return strings.Join(strNums, ",")
 }
 
+func findLowestSelfReplicatingSeed(program []uint64) uint64 {
+	var seed uint64
+	for itr := len(program) - 1; itr >= 0; itr-- {
+		seed <<= 3
+		for !slices.Equal(executeProgram(program, seed), program[itr:]) {
+			seed++
+		}
+	}
+	return seed
+}
+
 func executeProgram(program []uint64, seed uint64) []uint64 {
 	var res []uint64
 	registers := map[rune]uint64{
@@ -93,8 +104,7 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	program, seed := parseInput(input)
-	fmt.Println("Part 1:", partOne(program, seed))
-
+	log.Println("Part 1:", partOne(program, seed))
+	log.Println("Part 2:", findLowestSelfReplicatingSeed(program))
 }
