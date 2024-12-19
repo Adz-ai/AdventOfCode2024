@@ -8,155 +8,191 @@ import (
 	"strings"
 )
 
+// Vector represents a 2D coordinate or velocity vector
 type Vector struct {
 	x, y int
 }
 
+// Robot represents a robot with position and velocity vectors
 type Robot struct {
 	pos Vector
 	vel Vector
 }
 
-// Move robot one step, handling wraparound
+// move updates the robot's position based on its velocity, handling wraparound
+// within the given width and height bounds
 func (r *Robot) move(width, height int) {
 	r.pos.x = (r.pos.x + r.vel.x + width) % width
 	r.pos.y = (r.pos.y + r.vel.y + height) % height
 }
 
-// Parse a line like "p=0,4 v=3,-3"
+// parseRobot converts an input line in the format "p=x,y v=dx,dy" into a Robot struct
+// Example input: "p=0,4 v=3,-3"
 func parseRobot(line string) Robot {
 	parts := strings.Split(line, " ")
+	pos := strings.Split(parts[0][2:], ",") // Skip "p="
+	vel := strings.Split(parts[1][2:], ",") // Skip "v="
 
-	// Parse position
-	pos := parts[0][2:] // Skip "p="
-	posNums := strings.Split(pos, ",")
-	x, _ := strconv.Atoi(posNums[0])
-	y, _ := strconv.Atoi(posNums[1])
-	position := Vector{x, y}
+	x, _ := strconv.Atoi(pos[0])
+	y, _ := strconv.Atoi(pos[1])
+	dx, _ := strconv.Atoi(vel[0])
+	dy, _ := strconv.Atoi(vel[1])
 
-	// Parse velocity
-	vel := parts[1][2:] // Skip "v="
-	velNums := strings.Split(vel, ",")
-	dx, _ := strconv.Atoi(velNums[0])
-	dy, _ := strconv.Atoi(velNums[1])
-	velocity := Vector{dx, dy}
-
-	return Robot{position, velocity}
+	return Robot{Vector{x, y}, Vector{dx, dy}}
 }
 
-// Calculate standard deviation for a slice of numbers
-func standardDeviation(nums []float64) float64 {
-	if len(nums) == 0 {
-		return 0
-	}
-
-	// Calculate mean
-	var sum float64
-	for _, num := range nums {
-		sum += num
-	}
-	mean := sum / float64(len(nums))
-
-	// Calculate variance
-	var variance float64
-	for _, num := range nums {
-		diff := num - mean
-		variance += diff * diff
-	}
-	variance /= float64(len(nums))
-
-	return math.Sqrt(variance)
-}
-
-func part1(input []string) int {
-	var robots []Robot
+// parseRobots converts multiple input lines into a slice of Robots,
+// skipping empty lines
+func parseRobots(input []string) []Robot {
+	robots := make([]Robot, 0, len(input))
 	for _, line := range input {
-		if line == "" {
-			continue
+		if line != "" {
+			robots = append(robots, parseRobot(line))
 		}
-		robots = append(robots, parseRobot(line))
 	}
+	return robots
+}
 
-	width := 101
-	height := 103
-
-	// Simulate 100 seconds
-	for t := 0; t < 100; t++ {
+// simulateRobots moves all robots for a specified number of steps
+// within the given width and height bounds
+func simulateRobots(robots []Robot, steps, width, height int) {
+	for t := 0; t < steps; t++ {
 		for i := range robots {
 			robots[i].move(width, height)
 		}
 	}
+}
 
-	// Count quadrants
+// getQuadrant determines which quadrant a position falls into based on midpoints.
+// Returns row (0/1), column (0/1), and whether the position is valid (not on axes)
+func getQuadrant(pos Vector, midX, midY int) (int, int, bool) {
+	if pos.x == midX || pos.y == midY {
+		return 0, 0, false
+	}
+
+	row := 0
+	if pos.y > midY {
+		row = 1
+	}
+	col := 0
+	if pos.x >= midX {
+		col = 1
+	}
+
+	return row, col, true
+}
+
+// countQuadrants counts robots in each quadrant and returns their product.
+// Robots on axes are ignored
+func countQuadrants(robots []Robot, width, height int) int {
 	quadrants := [2][2]int{}
 	midX := width / 2
 	midY := height / 2
 
 	for _, robot := range robots {
-		if robot.pos.x == midX || robot.pos.y == midY {
-			continue
+		row, col, valid := getQuadrant(robot.pos, midX, midY)
+		if valid {
+			quadrants[row][col]++
 		}
-
-		row := 0
-		if robot.pos.y > midY {
-			row = 1
-		}
-		col := 0
-		if robot.pos.x >= midX {
-			col = 1
-		}
-		quadrants[row][col]++
 	}
 
-	// Calculate product
 	product := 1
 	for _, row := range quadrants {
 		for _, count := range row {
 			product *= count
 		}
 	}
-
 	return product
 }
 
-func part2(input []string) int {
-	var robots []Robot
-	for _, line := range input {
-		if line == "" {
-			continue
-		}
-		robots = append(robots, parseRobot(line))
+// getPositionCoordinates extracts x and y coordinates from robots into separate slices
+func getPositionCoordinates(robots []Robot) ([]float64, []float64) {
+	xCoords := make([]float64, len(robots))
+	yCoords := make([]float64, len(robots))
+
+	for i, robot := range robots {
+		xCoords[i] = float64(robot.pos.x)
+		yCoords[i] = float64(robot.pos.y)
 	}
 
-	width := 101
-	height := 103
+	return xCoords, yCoords
+}
 
-	// Simulate until we find the pattern
-	for t := 1; ; t++ {
-		// Move all robots
+// calculateMean computes the arithmetic mean of a slice of numbers
+func calculateMean(nums []float64) float64 {
+	var sum float64
+	for _, num := range nums {
+		sum += num
+	}
+	return sum / float64(len(nums))
+}
+
+// standardDeviation calculates the standard deviation of a slice of numbers.
+// Returns 0 for empty slices
+func standardDeviation(nums []float64) float64 {
+	if len(nums) == 0 {
+		return 0
+	}
+
+	mean := calculateMean(nums)
+	var variance float64
+	for _, num := range nums {
+		diff := num - mean
+		variance += diff * diff
+	}
+	variance /= float64(len(nums))
+	return math.Sqrt(variance)
+}
+
+// isChristmasTreePattern determines if robots have formed the Christmas tree pattern
+// by checking if their standard deviations are below a threshold
+func isChristmasTreePattern(robots []Robot) bool {
+	xCoords, yCoords := getPositionCoordinates(robots)
+	xStdDev := standardDeviation(xCoords)
+	yStdDev := standardDeviation(yCoords)
+
+	const maxStdDev = 20.0
+	return xStdDev < maxStdDev && yStdDev < maxStdDev
+}
+
+// simulateUntilPattern continues moving robots until they form the Christmas tree pattern.
+// Returns the number of steps taken
+func simulateUntilPattern(robots []Robot, width, height int) int {
+	for time := 1; ; time++ {
 		for i := range robots {
 			robots[i].move(width, height)
 		}
 
-		// Collect x and y coordinates
-		xCoords := make([]float64, len(robots))
-		yCoords := make([]float64, len(robots))
-		for i, robot := range robots {
-			xCoords[i] = float64(robot.pos.x)
-			yCoords[i] = float64(robot.pos.y)
-		}
-
-		// Check standard deviations
-		// When robots form a Christmas tree pattern, they'll be clustered together
-		// resulting in low standard deviations for both x and y coordinates
-		xStdDev := standardDeviation(xCoords)
-		yStdDev := standardDeviation(yCoords)
-
-		// Based on Reddit insight: Christmas tree is ~33x31, and std dev is <20 for both x and y
-		if xStdDev < 20 && yStdDev < 20 {
-			return t
+		if isChristmasTreePattern(robots) {
+			return time
 		}
 	}
+}
+
+// part1 solves the first part of the puzzle:
+// Simulates robot movement for 100 steps and calculates the product of robots in each quadrant
+func part1(input []string) int {
+	const (
+		width  = 101
+		height = 103
+		steps  = 100
+	)
+
+	robots := parseRobots(input)
+	simulateRobots(robots, steps, width, height)
+	return countQuadrants(robots, width, height)
+}
+
+// part2 solves the second part of the puzzle:
+// Finds how many steps it takes for robots to form a Christmas tree pattern
+func part2(input []string) int {
+	const (
+		width  = 101
+		height = 103
+	)
+
+	robots := parseRobots(input)
+	return simulateUntilPattern(robots, width, height)
 }
 
 func main() {
