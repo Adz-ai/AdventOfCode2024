@@ -13,12 +13,53 @@ type system struct {
 	c1, c2 int64 // Prize X and Y coordinates
 }
 
-// solve uses Cramer's rule to find the solution to the system of equations
-func (s system) cramersRule() (a, b int64) {
-	// Calculate determinant for the system
-	det := s.a1*s.b2 - s.a2*s.b1
+// parseCoordinates extracts X and Y values from a string like "X+10, Y+5"
+func parseCoordinates(s string) (x, y int64) {
+	parts := strings.Split(s, "+")
+	if len(parts) >= 3 {
+		x, _ = strconv.ParseInt(strings.TrimRight(parts[1], ", Y"), 10, 64)
+		y, _ = strconv.ParseInt(parts[2], 10, 64)
+	}
+	return x, y
+}
 
-	// Calculate numerators for a and b using Cramer's rule
+// parsePrize extracts X and Y values from a string like "X=10, Y=5"
+func parsePrize(s string) (x, y int64) {
+	parts := strings.Split(s, "=")
+	if len(parts) >= 3 {
+		x, _ = strconv.ParseInt(strings.TrimRight(parts[1], ", Y"), 10, 64)
+		y, _ = strconv.ParseInt(parts[2], 10, 64)
+	}
+	return x, y
+}
+
+// parseSystem extracts a complete system from three consecutive input lines
+func parseSystem(lines []string, start int) (sys system, nextIndex int) {
+	if start >= len(lines) {
+		return sys, start
+	}
+
+	for i := start; i < len(lines) && i < start+3; i++ {
+		line := strings.TrimSpace(lines[i])
+		switch {
+		case strings.HasPrefix(line, "Button A:"):
+			sys.a1, sys.a2 = parseCoordinates(line)
+		case strings.HasPrefix(line, "Button B:"):
+			sys.b1, sys.b2 = parseCoordinates(line)
+		case strings.HasPrefix(line, "Prize:"):
+			sys.c1, sys.c2 = parsePrize(line)
+		}
+	}
+	return sys, start + 3
+}
+
+// cramersRule solves the system using Cramer's rule
+func (s system) cramersRule() (a, b int64) {
+	det := s.a1*s.b2 - s.a2*s.b1
+	if det == 0 {
+		return 0, 0
+	}
+
 	aNum := s.c1*s.b2 - s.b1*s.c2
 	bNum := s.a1*s.c2 - s.c1*s.a2
 
@@ -34,68 +75,43 @@ func (s system) cramersRule() (a, b int64) {
 }
 
 func solve(input []string, p2 bool) int64 {
-	var offset int64 = 10000000000000
 	var total int64
-	var sys system
+	offset := int64(0)
+	if p2 {
+		offset = 10000000000000
+	}
 
 	for i := 0; i < len(input); {
+		// Skip empty lines
 		if i >= len(input) || input[i] == "" {
 			i++
 			continue
 		}
 
-		// Parse Button A
-		if strings.Contains(input[i], "Button A:") {
-			parts := strings.Split(input[i], "+")
-			sys.a1, _ = strconv.ParseInt(strings.TrimRight(parts[1], ", Y"), 10, 64)
-			sys.a2, _ = strconv.ParseInt(parts[2], 10, 64)
+		// Parse system and update index
+		sys, nextIndex := parseSystem(input, i)
+		i = nextIndex
+
+		// Apply offset for part 2
+		if p2 {
+			sys.c1 += offset
+			sys.c2 += offset
 		}
-		i++
 
-		// Parse Button B
-		if i < len(input) && strings.Contains(input[i], "Button B:") {
-			parts := strings.Split(input[i], "+")
-			sys.b1, _ = strconv.ParseInt(strings.TrimRight(parts[1], ", Y"), 10, 64)
-			sys.b2, _ = strconv.ParseInt(parts[2], 10, 64)
-		}
-		i++
-
-		// Parse Prize
-		if i < len(input) && strings.Contains(input[i], "Prize:") {
-			parts := strings.Split(input[i], "=")
-			sys.c1, _ = strconv.ParseInt(strings.TrimRight(parts[1], ", Y"), 10, 64)
-			sys.c2, _ = strconv.ParseInt(parts[2], 10, 64)
-
-			// Offset coordinates for part 2
-			if p2 {
-				sys.c1 += offset
-				sys.c2 += offset
-			}
-		}
-		i++
-
-		// Solve the system and add to total
-		a, b := sys.cramersRule()
-		if a > 0 || b > 0 { // Only add if solution exists
+		// Calculate and add solution
+		if a, b := sys.cramersRule(); a > 0 || b > 0 {
 			total += 3*a + b
 		}
 	}
 	return total
 }
 
-func part1(input []string) int64 {
-	return solve(input, false)
-}
-
-func part2(input []string) int64 {
-	return solve(input, true)
-}
 func main() {
 	lines, err := utility.ParseTextFile("input")
 	if err != nil {
 		log.Fatal(err)
 		return
 	}
-	log.Println(part1(lines))
-	log.Println(part2(lines))
+	log.Println(solve(lines, false))
+	log.Println(solve(lines, true))
 }
