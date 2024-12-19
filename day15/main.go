@@ -248,9 +248,6 @@ func part2(input []string) int {
 
 	// Create expanded board
 	board := createExpandedBoard(input, movesIdx)
-	if err != nil {
-		log.Fatal(err)
-	}
 
 	// Parse moves
 	var moves []byte
