@@ -78,7 +78,7 @@ func findRobot(board [][]byte) (int, int, error) {
 }
 
 // createExpandedBoard creates a board with doubled width for part 2
-func createExpandedBoard(input []string, movesIdx int) (*Board, error) {
+func createExpandedBoard(input []string, movesIdx int) *Board {
 	board := &Board{}
 	for i := 0; i < movesIdx; i++ {
 		var newLine []byte
@@ -97,7 +97,7 @@ func createExpandedBoard(input []string, movesIdx int) (*Board, error) {
 		}
 		board.grid = append(board.grid, newLine)
 	}
-	return board, nil
+	return board
 }
 
 // isValidPosition checks if a position is within board bounds
@@ -247,7 +247,7 @@ func part2(input []string) int {
 	}
 
 	// Create expanded board
-	board, err := createExpandedBoard(input, movesIdx)
+	board := createExpandedBoard(input, movesIdx)
 	if err != nil {
 		log.Fatal(err)
 	}
