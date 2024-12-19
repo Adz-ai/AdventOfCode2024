@@ -39,23 +39,22 @@ func parseGrid(lines []string) Grid {
 }
 
 func getNeighbors(state State) []State {
-	// Define possible moves based on current direction
 	var moves []State
 
-	// Always try moving forward
+	// Move forward
 	moves = append(moves, State{
 		pos: state.pos.Add(state.dir),
 		dir: state.dir,
 	})
 
-	// Turn right (90 degrees clockwise)
+	// Turn right
 	right := image.Point{X: -state.dir.Y, Y: state.dir.X}
 	moves = append(moves, State{
 		pos: state.pos.Add(right),
 		dir: right,
 	})
 
-	// Turn left (90 degrees counterclockwise)
+	// Turn left
 	left := image.Point{X: state.dir.Y, Y: -state.dir.X}
 	moves = append(moves, State{
 		pos: state.pos.Add(left),
@@ -65,8 +64,74 @@ func getNeighbors(state State) []State {
 	return moves
 }
 
+func isDeadEnd(current RouteState, bestCost int) bool {
+	if len(current.path) > 10000 {
+		return true
+	}
+	if bestCost != -1 && current.cost > bestCost {
+		return true
+	}
+	return false
+}
+
+func isGoal(pos image.Point, grid Grid) bool {
+	return grid.cells[pos] == 'E'
+}
+
+func updateBestPaths(current RouteState, bestCost int, bestPaths map[int][]map[image.Point]struct{}) (int, map[int][]map[image.Point]struct{}) { //nolint:lll
+	if bestCost == -1 || current.cost <= bestCost {
+		newCost := current.cost
+		if bestCost == -1 || newCost < bestCost {
+			bestCost = newCost
+			bestPaths[newCost] = nil
+		}
+		bestPaths[newCost] = append(bestPaths[newCost], current.path)
+	}
+	return bestCost, bestPaths
+}
+
+func validMove(grid Grid, next State) bool {
+	return grid.cells[next.pos] != '#'
+}
+
+func shouldSkip(visited map[State]int, next State, newCost int) bool {
+	if prevCost, exists := visited[next]; exists && prevCost < newCost {
+		return true
+	}
+	return false
+}
+
+func copyPath(currentPath map[image.Point]struct{}, nextPos image.Point) map[image.Point]struct{} {
+	newPath := make(map[image.Point]struct{}, len(currentPath)+1)
+	for p := range currentPath {
+		newPath[p] = struct{}{}
+	}
+	newPath[nextPos] = struct{}{}
+	return newPath
+}
+
+func calculateCost(current RouteState, next State) int {
+	newCost := current.cost + 1
+	if next.dir != current.state.dir {
+		newCost += 1000
+	}
+	return newCost
+}
+
+func collectAllPositions(bestPaths map[int][]map[image.Point]struct{}, bestCost int) int {
+	allPositions := make(map[image.Point]struct{})
+	for _, paths := range bestPaths[bestCost] {
+		for pos := range paths {
+			allPositions[pos] = struct{}{}
+		}
+	}
+	return len(allPositions)
+}
+
 func findPath(grid Grid) (int, int) {
 	visited := make(map[State]int)
+	bestPaths := make(map[int][]map[image.Point]struct{})
+
 	queue := []RouteState{{
 		state: State{grid.start, image.Point{X: 1}}, // Start facing east
 		path:  map[image.Point]struct{}{grid.start: {}},
@@ -74,74 +139,41 @@ func findPath(grid Grid) (int, int) {
 	}}
 
 	bestCost := -1
-	bestPaths := make(map[int][]map[image.Point]struct{})
 
 	for len(queue) > 0 {
 		current := queue[0]
 		queue = queue[1:]
 
-		// Skip if path is too long
-		if len(current.path) > 10000 {
+		if isDeadEnd(current, bestCost) {
 			continue
 		}
 
-		// Skip if we've already found better paths
-		if bestCost != -1 && current.cost > bestCost {
+		if isGoal(current.state.pos, grid) {
+			bestCost, bestPaths = updateBestPaths(current, bestCost, bestPaths)
 			continue
 		}
 
-		// Check if we've reached the end
-		if grid.cells[current.state.pos] == 'E' {
-			if bestCost == -1 || current.cost <= bestCost {
-				bestCost = current.cost
-				bestPaths[bestCost] = append(bestPaths[bestCost], current.path)
-			}
-			continue
-		}
-
-		// Try each possible move
 		for _, next := range getNeighbors(current.state) {
-			if grid.cells[next.pos] == '#' {
+			if !validMove(grid, next) {
 				continue
 			}
-
-			// Calculate new cost
-			newCost := current.cost + 1
-			if next.dir != current.state.dir {
-				newCost += 1000
-			}
-
-			// Skip if we've found a better path to this state
-			if prevCost, exists := visited[next]; exists && prevCost < newCost {
+			newCost := calculateCost(current, next)
+			if shouldSkip(visited, next, newCost) {
 				continue
 			}
 			visited[next] = newCost
-
-			// Create new path
-			newPath := make(map[image.Point]struct{})
-			for pos := range current.path {
-				newPath[pos] = struct{}{}
-			}
-			newPath[next.pos] = struct{}{}
-
-			// Add to queue
 			queue = append(queue, RouteState{
 				state: next,
-				path:  newPath,
+				path:  copyPath(current.path, next.pos),
 				cost:  newCost,
 			})
 		}
 	}
 
-	// Count unique positions in all best paths
-	allPositions := make(map[image.Point]struct{})
-	for _, paths := range bestPaths[bestCost] {
-		for pos := range paths {
-			allPositions[pos] = struct{}{}
-		}
+	if bestCost == -1 {
+		return -1, 0
 	}
-
-	return bestCost, len(allPositions)
+	return bestCost, collectAllPositions(bestPaths, bestCost)
 }
 
 func solve(lines []string) (int, int) {
