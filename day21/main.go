@@ -49,16 +49,17 @@ func getPressesForNumericPad(input []string, start string, numericalMap map[stri
 		}
 
 		// Prioritize movement based on current position
-		if current.Y == 0 && dest.X == 0 {
+		switch {
+		case current.Y == 0 && dest.X == 0:
 			output = append(output, vertical...)
 			output = append(output, horizontal...)
-		} else if current.X == 0 && dest.Y == 0 {
+		case current.X == 0 && dest.Y == 0:
 			output = append(output, horizontal...)
 			output = append(output, vertical...)
-		} else if diffX < 0 {
+		case diffX < 0:
 			output = append(output, horizontal...)
 			output = append(output, vertical...)
-		} else if diffX >= 0 {
+		case diffX >= 0:
 			output = append(output, vertical...)
 			output = append(output, horizontal...)
 		}
@@ -129,7 +130,7 @@ func getIndividualSteps(input []string) [][]string {
 	return output
 }
 
-func getCountAfterRobots(input []string, maxRobots int, robot int, cache map[string][]int, directionalMap map[string]Coordinates) int {
+func getCountAfterRobots(input []string, maxRobots int, robot int, cache map[string][]int, directionalMap map[string]Coordinates) int { //nolint:lll
 	key := strings.Join(input, "")
 	if val, ok := cache[key]; ok {
 		if val[robot-1] != 0 {
