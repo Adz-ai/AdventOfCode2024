@@ -1,7 +1,7 @@
 package main
 
 import (
-	"aoc2024/utility"
+	. "aoc2024/utility"
 	"log"
 )
 
@@ -35,21 +35,14 @@ func isInTrack(track map[[2]int]int, pos [2]int) bool {
 
 // Manhattan distance between two positions
 func manhattanDistance(pos1, pos2 [2]int) int {
-	return abs(pos1[0]-pos2[0]) + abs(pos1[1]-pos2[1])
-}
-
-func abs(x int) int {
-	if x < 0 {
-		return -x
-	}
-	return x
+	return Abs(pos1[0]-pos2[0]) + Abs(pos1[1]-pos2[1])
 }
 
 // Find all possible cheat endpoints within maxDist
 func findCheatEndpoints(pos [2]int, track map[[2]int]int, maxDist int) map[[2]int]struct{} {
 	endpoints := make(map[[2]int]struct{})
 	for di := -maxDist; di <= maxDist; di++ {
-		maxJ := maxDist - abs(di)
+		maxJ := maxDist - Abs(di)
 		for dj := -maxJ; dj <= maxJ; dj++ {
 			newPos := [2]int{pos[0] + di, pos[1] + dj}
 			if _, exists := track[newPos]; exists {
@@ -137,7 +130,7 @@ func part2(grid []string) int {
 }
 
 func main() {
-	input, err := utility.ParseTextFile("input")
+	input, err := ParseTextFile("input")
 	if err != nil {
 		log.Fatal(err)
 	}
