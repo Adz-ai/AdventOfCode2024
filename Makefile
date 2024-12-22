@@ -73,7 +73,7 @@ fetch-input:
 		exit 1; \
 	fi
 	@for dir in $(DAY_DIRS); do \
-		DAY=$$(echo $$dir | grep -o '[0-9]*'); \
+		DAY=$$(echo $$dir | grep -o '[0-9]*' | sed 's/^0*//'); \
 		if [ -n "$$DAY" ]; then \
 			if [ -f "$$dir/input.txt" ]; then \
 				echo "Input for Day $$DAY already exists. Skipping..."; \
