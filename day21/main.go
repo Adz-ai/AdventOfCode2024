@@ -11,7 +11,6 @@ type Coordinates struct {
 	X, Y int
 }
 
-// getNumericValue extracts numeric value from code ignoring leading zeros
 func getNumericValue(code string) int {
 	numStr := strings.TrimLeft(code[:len(code)-1], "0")
 	if numStr == "" {
@@ -21,12 +20,12 @@ func getNumericValue(code string) int {
 	return num
 }
 
-func getPressesForNumericPad(input []string, start string, numericalMap map[string]Coordinates) []string {
-	current := numericalMap[start]
+func getPresses(input []string, start string, coordMap map[string]Coordinates, prioritizeMovement func(Coordinates, Coordinates) bool) []string {
+	current := coordMap[start]
 	output := make([]string, 0)
 
 	for _, char := range input {
-		dest := numericalMap[char]
+		dest := coordMap[char]
 		diffX, diffY := dest.X-current.X, dest.Y-current.Y
 
 		horizontal := make([]string, 0)
@@ -48,20 +47,12 @@ func getPressesForNumericPad(input []string, start string, numericalMap map[stri
 			}
 		}
 
-		// Prioritize movement based on current position
-		switch {
-		case current.Y == 0 && dest.X == 0:
+		if prioritizeMovement(current, dest) {
 			output = append(output, vertical...)
 			output = append(output, horizontal...)
-		case current.X == 0 && dest.Y == 0:
+		} else {
 			output = append(output, horizontal...)
 			output = append(output, vertical...)
-		case diffX < 0:
-			output = append(output, horizontal...)
-			output = append(output, vertical...)
-		case diffX >= 0:
-			output = append(output, vertical...)
-			output = append(output, horizontal...)
 		}
 
 		current = dest
@@ -70,51 +61,27 @@ func getPressesForNumericPad(input []string, start string, numericalMap map[stri
 	return output
 }
 
-func getPressesForDirectionalPad(input []string, start string, directionalMap map[string]Coordinates) []string {
-	current := directionalMap[start]
-	output := make([]string, 0)
-
-	for _, char := range input {
-		dest := directionalMap[char]
-		diffX, diffY := dest.X-current.X, dest.Y-current.Y
-
-		horizontal := make([]string, 0)
-		vertical := make([]string, 0)
-
-		for i := 0; i < Abs(diffX); i++ {
-			if diffX >= 0 {
-				horizontal = append(horizontal, ">")
-			} else {
-				horizontal = append(horizontal, "<")
-			}
-		}
-
-		for i := 0; i < Abs(diffY); i++ {
-			if diffY >= 0 {
-				vertical = append(vertical, "^")
-			} else {
-				vertical = append(vertical, "v")
-			}
-		}
-
-		// Prioritize movement based on current position
-		if current.X == 0 && dest.Y == 1 {
-			output = append(output, horizontal...)
-			output = append(output, vertical...)
-		} else if current.Y == 1 && dest.X == 0 {
-			output = append(output, vertical...)
-			output = append(output, horizontal...)
-		} else if diffX < 0 {
-			output = append(output, horizontal...)
-			output = append(output, vertical...)
-		} else if diffX >= 0 {
-			output = append(output, vertical...)
-			output = append(output, horizontal...)
-		}
-		current = dest
-		output = append(output, "A")
+func prioritizeNumeric(current, dest Coordinates) bool {
+	diffX := dest.X - current.X
+	switch {
+	case current.Y == 0 && dest.X == 0:
+		return true
+	case current.X == 0 && dest.Y == 0:
+		return false
+	default:
+		return diffX >= 0
 	}
-	return output
+}
+
+func prioritizeDirectional(current, dest Coordinates) bool {
+	diffX := dest.X - current.X
+	if current.X == 0 && dest.Y == 1 {
+		return false
+	} else if current.Y == 1 && dest.X == 0 {
+		return true
+	} else {
+		return diffX >= 0
+	}
 }
 
 func getIndividualSteps(input []string) [][]string {
@@ -140,7 +107,7 @@ func getCountAfterRobots(input []string, maxRobots int, robot int, cache map[str
 		cache[key] = make([]int, maxRobots)
 	}
 
-	seq := getPressesForDirectionalPad(input, "A", directionalMap)
+	seq := getPresses(input, "A", directionalMap, prioritizeDirectional)
 	cache[key][0] = len(seq)
 
 	if robot == maxRobots {
@@ -167,7 +134,7 @@ func getSequence(input []string, numericalMap, directionalMap map[string]Coordin
 	cache := make(map[string][]int)
 	for _, line := range input {
 		row := strings.Split(line, "")
-		seq1 := getPressesForNumericPad(row, "A", numericalMap)
+		seq1 := getPresses(row, "A", numericalMap, prioritizeNumeric)
 		num := getCountAfterRobots(seq1, robots, 1, cache, directionalMap)
 		count += getNumericValue(line) * num
 	}
