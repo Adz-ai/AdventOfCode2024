@@ -75,11 +75,12 @@ func prioritizeNumeric(current, dest Coordinates) bool {
 
 func prioritizeDirectional(current, dest Coordinates) bool {
 	diffX := dest.X - current.X
-	if current.X == 0 && dest.Y == 1 {
+	switch {
+	case current.X == 0 && dest.Y == 1:
 		return false
-	} else if current.Y == 1 && dest.X == 0 {
+	case current.Y == 1 && dest.X == 0:
 		return true
-	} else {
+	default:
 		return diffX >= 0
 	}
 }
