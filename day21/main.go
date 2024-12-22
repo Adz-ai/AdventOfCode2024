@@ -20,7 +20,7 @@ func getNumericValue(code string) int {
 	return num
 }
 
-func getPresses(input []string, start string, coordMap map[string]Coordinates, prioritizeMovement func(Coordinates, Coordinates) bool) []string {
+func getPresses(input []string, start string, coordMap map[string]Coordinates, prioritizeMovement func(Coordinates, Coordinates) bool) []string { //nolint:lll
 	current := coordMap[start]
 	output := make([]string, 0)
 
@@ -142,7 +142,6 @@ func getSequence(input []string, numericalMap, directionalMap map[string]Coordin
 }
 
 func main() {
-	// Initialize maps
 	numericalMap := map[string]Coordinates{
 		"A": {2, 0},
 		"0": {1, 0},
