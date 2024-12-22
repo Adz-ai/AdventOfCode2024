@@ -2,7 +2,6 @@ package main
 
 import (
 	"aoc2024/utility"
-	"fmt"
 	"log"
 	"strconv"
 )
@@ -23,15 +22,12 @@ func prune(secret int) int {
 
 // generateNext creates the next secret number based on the current one
 func generateNext(secret int) int {
-	// Step 1: Multiply by 64
 	result := mix(secret, secret*64)
 	result = prune(result)
 
-	// Step 2: Divide by 32
 	result = mix(result, result/32)
 	result = prune(result)
 
-	// Step 3: Multiply by 2048
 	result = mix(result, result*2048)
 	result = prune(result)
 
@@ -53,11 +49,9 @@ func part1(input []string) int {
 	for _, line := range input {
 		initial, err := strconv.Atoi(line)
 		if err != nil {
-			fmt.Printf("Error parsing input: %v\n", err)
-			continue
+			log.Fatalf("Error parsing input: %v\n", err)
 		}
 
-		// Generate 2000th number and add to sum
 		final := generate2000th(initial)
 		sum += final
 	}
