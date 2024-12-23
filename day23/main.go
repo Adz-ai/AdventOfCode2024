@@ -10,66 +10,6 @@ import (
 // Graph represents connections between computers
 type Graph map[string]map[string]bool
 
-// findMaxClique returns the largest set of fully connected computers
-func (g Graph) findMaxClique() []string {
-	var maxClique []string
-	computers := make([]string, 0)
-	for computer := range g {
-		computers = append(computers, computer)
-	}
-
-	// Try all possible combinations of computers, starting from the largest possible size
-	for size := len(computers); size > 0; size-- {
-		// If we already found a clique, we don't need to check smaller sizes
-		if len(maxClique) > 0 {
-			break
-		}
-
-		var checkClique func([]string, int, int)
-		checkClique = func(current []string, start int, remaining int) {
-			// If we already found a clique, stop searching
-			if len(maxClique) > 0 {
-				return
-			}
-
-			// If we have enough computers in our current set
-			if remaining == 0 {
-				if g.areConnected(current) {
-					maxClique = make([]string, len(current))
-					copy(maxClique, current)
-				}
-				return
-			}
-
-			// If we can't possibly get enough computers, stop this branch
-			if len(computers)-start < remaining {
-				return
-			}
-
-			// Try adding each remaining computer
-			for i := start; i < len(computers); i++ {
-				// Check if this computer could be added to our current set
-				canAdd := true
-				for _, c := range current {
-					if !g[c][computers[i]] {
-						canAdd = false
-						break
-					}
-				}
-				if canAdd {
-					current = append(current, computers[i])
-					checkClique(current, i+1, remaining-1)
-					current = current[:len(current)-1]
-				}
-			}
-		}
-
-		checkClique(make([]string, 0), 0, size)
-	}
-
-	return maxClique
-}
-
 // addConnection adds a bidirectional connection between two computers
 func (g Graph) addConnection(c1, c2 string) {
 	if _, exists := g[c1]; !exists {
@@ -82,6 +22,11 @@ func (g Graph) addConnection(c1, c2 string) {
 	g[c2][c1] = true
 }
 
+// getDegree returns the number of connections a computer has
+func (g Graph) getDegree(computer string) int {
+	return len(g[computer])
+}
+
 // areConnected checks if all computers in the set are interconnected
 func (g Graph) areConnected(computers []string) bool {
 	for i := 0; i < len(computers); i++ {
@@ -89,6 +34,121 @@ func (g Graph) areConnected(computers []string) bool {
 			if !g[computers[i]][computers[j]] {
 				return false
 			}
+		}
+	}
+	return true
+}
+
+// findMaxClique returns the largest set of fully connected computers
+func (g Graph) findMaxClique() []string {
+	// Convert map keys to slice and sort by degree (descending)
+	computers := make([]string, 0, len(g))
+	for computer := range g {
+		computers = append(computers, computer)
+	}
+	sort.Slice(computers, func(i, j int) bool {
+		return g.getDegree(computers[i]) > g.getDegree(computers[j])
+	})
+
+	// Initialize maximum clique tracking
+	maxClique := make([]string, 0)
+	currentMax := 0
+
+	// Use bit arrays for faster set operations
+	candidates := make([]bool, len(computers))
+	for i := range candidates {
+		candidates[i] = true
+	}
+
+	// Helper function to get computer index
+	computerIndex := make(map[string]int, len(computers))
+	for i, c := range computers {
+		computerIndex[c] = i
+	}
+
+	var bronKerbosch func([]string, []bool, []bool, []bool)
+	bronKerbosch = func(r []string, p, x, skip []bool) {
+		// If no candidates and nothing to exclude
+		if allFalse(p) && allFalse(x) {
+			if len(r) > currentMax {
+				maxClique = make([]string, len(r))
+				copy(maxClique, r)
+				currentMax = len(r)
+			}
+			return
+		}
+
+		// Find pivot
+		pivot := -1
+		maxCount := -1
+		for i := range computers {
+			if !p[i] && !x[i] {
+				continue
+			}
+			count := 0
+			for j := range computers {
+				if p[j] && g[computers[i]][computers[j]] {
+					count++
+				}
+			}
+			if count > maxCount {
+				maxCount = count
+				pivot = i
+			}
+		}
+
+		// For each vertex not connected to pivot
+		for v := range computers {
+			if !p[v] || (pivot != -1 && g[computers[pivot]][computers[v]]) {
+				continue
+			}
+			if skip[v] {
+				continue
+			}
+
+			// Create new sets
+			newR := append([]string(nil), r...)
+			newR = append(newR, computers[v])
+
+			newP := make([]bool, len(computers))
+			newX := make([]bool, len(computers))
+
+			// Add neighbors of v that are in p to new p and x sets
+			for i := range computers {
+				if p[i] && g[computers[v]][computers[i]] {
+					newP[i] = true
+				}
+				if x[i] && g[computers[v]][computers[i]] {
+					newX[i] = true
+				}
+			}
+
+			bronKerbosch(newR, newP, newX, skip)
+
+			p[v] = false
+			x[v] = true
+		}
+	}
+
+	// Initialize starting sets
+	p := make([]bool, len(computers))
+	x := make([]bool, len(computers))
+	skip := make([]bool, len(computers))
+	for i := range p {
+		p[i] = true
+	}
+
+	// Start recursion
+	bronKerbosch([]string{}, p, x, skip)
+
+	return maxClique
+}
+
+// allFalse returns true if all values in the slice are false
+func allFalse(arr []bool) bool {
+	for _, v := range arr {
+		if v {
+			return false
 		}
 	}
 	return true
