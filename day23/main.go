@@ -41,107 +41,162 @@ func (g Graph) areConnected(computers []string) bool {
 
 // findMaxClique returns the largest set of fully connected computers
 func (g Graph) findMaxClique() []string {
-	// Convert map keys to slice and sort by degree (descending)
+	state := newCliqueState(g)
+
+	p := make([]bool, len(state.computers))
+	x := make([]bool, len(state.computers))
+	skip := make([]bool, len(state.computers))
+	for i := range p {
+		p[i] = true
+	}
+
+	state.bronKerbosch([]string{}, p, x, skip)
+	return state.maxClique
+}
+
+// findTripleConnections finds all sets of three interconnected computers
+func (g Graph) findTripleConnections(computers []string) [][]string {
+	var result [][]string
+
+	for i := 0; i < len(computers); i++ {
+		for j := i + 1; j < len(computers); j++ {
+			for k := j + 1; k < len(computers); k++ {
+				set := []string{computers[i], computers[j], computers[k]}
+				if g.areConnected(set) {
+					result = append(result, set)
+				}
+			}
+		}
+	}
+	return result
+}
+
+// CliqueState holds the state for clique finding
+type CliqueState struct {
+	computers     []string
+	computerIndex map[string]int
+	maxClique     []string
+	currentMax    int
+	graph         Graph
+}
+
+// newCliqueState initializes a new CliqueState
+func newCliqueState(g Graph) *CliqueState {
 	computers := make([]string, 0, len(g))
 	for computer := range g {
 		computers = append(computers, computer)
 	}
+
+	// Sort by degree
 	sort.Slice(computers, func(i, j int) bool {
 		return g.getDegree(computers[i]) > g.getDegree(computers[j])
 	})
 
-	// Initialize maximum clique tracking
-	maxClique := make([]string, 0)
-	currentMax := 0
-
-	// Use bit arrays for faster set operations
-	candidates := make([]bool, len(computers))
-	for i := range candidates {
-		candidates[i] = true
-	}
-
-	// Helper function to get computer index
 	computerIndex := make(map[string]int, len(computers))
 	for i, c := range computers {
 		computerIndex[c] = i
 	}
 
-	var bronKerbosch func([]string, []bool, []bool, []bool)
-	bronKerbosch = func(r []string, p, x, skip []bool) {
-		// If no candidates and nothing to exclude
-		if allFalse(p) && allFalse(x) {
-			if len(r) > currentMax {
-				maxClique = make([]string, len(r))
-				copy(maxClique, r)
-				currentMax = len(r)
-			}
-			return
+	return &CliqueState{
+		computers:     computers,
+		computerIndex: computerIndex,
+		maxClique:     make([]string, 0),
+		currentMax:    0,
+		graph:         g,
+	}
+}
+
+// findPivot finds the pivot vertex for the Bron-Kerbosch algorithm
+func (s *CliqueState) findPivot(p, x []bool) int {
+	pivot := -1
+	maxCount := -1
+
+	for i := range s.computers {
+		if !p[i] && !x[i] {
+			continue
 		}
-
-		// Find pivot
-		pivot := -1
-		maxCount := -1
-		for i := range computers {
-			if !p[i] && !x[i] {
-				continue
-			}
-			count := 0
-			for j := range computers {
-				if p[j] && g[computers[i]][computers[j]] {
-					count++
-				}
-			}
-			if count > maxCount {
-				maxCount = count
-				pivot = i
-			}
+		count := s.countConnections(i, p)
+		if count > maxCount {
+			maxCount = count
+			pivot = i
 		}
+	}
+	return pivot
+}
 
-		// For each vertex not connected to pivot
-		for v := range computers {
-			if !p[v] || (pivot != -1 && g[computers[pivot]][computers[v]]) {
-				continue
-			}
-			if skip[v] {
-				continue
-			}
+// countConnections counts connections from vertex to vertices in set p
+func (s *CliqueState) countConnections(vertex int, p []bool) int {
+	count := 0
+	for j := range s.computers {
+		if p[j] && s.graph[s.computers[vertex]][s.computers[j]] {
+			count++
+		}
+	}
+	return count
+}
 
-			// Create new sets
-			newR := append([]string(nil), r...)
-			newR = append(newR, computers[v])
+// updateMaxClique updates the maximum clique if a larger one is found
+func (s *CliqueState) updateMaxClique(r []string) {
+	if len(r) > s.currentMax {
+		s.maxClique = make([]string, len(r))
+		copy(s.maxClique, r)
+		s.currentMax = len(r)
+	}
+}
 
-			newP := make([]bool, len(computers))
-			newX := make([]bool, len(computers))
+// bronKerboschStep performs one step of the Bron-Kerbosch algorithm
+func (s *CliqueState) bronKerboschStep(r []string, p, x []bool, v int) ([]string, []bool, []bool) {
+	newR := append([]string(nil), r...)
+	newR = append(newR, s.computers[v])
 
-			// Add neighbors of v that are in p to new p and x sets
-			for i := range computers {
-				if p[i] && g[computers[v]][computers[i]] {
-					newP[i] = true
-				}
-				if x[i] && g[computers[v]][computers[i]] {
-					newX[i] = true
-				}
-			}
+	newP := make([]bool, len(s.computers))
+	newX := make([]bool, len(s.computers))
 
-			bronKerbosch(newR, newP, newX, skip)
-
-			p[v] = false
-			x[v] = true
+	for i := range s.computers {
+		if p[i] && s.graph[s.computers[v]][s.computers[i]] {
+			newP[i] = true
+		}
+		if x[i] && s.graph[s.computers[v]][s.computers[i]] {
+			newX[i] = true
 		}
 	}
 
-	// Initialize starting sets
-	p := make([]bool, len(computers))
-	x := make([]bool, len(computers))
-	skip := make([]bool, len(computers))
-	for i := range p {
-		p[i] = true
+	return newR, newP, newX
+}
+
+// bronKerbosch implements the Bron-Kerbosch algorithm with pivoting
+func (s *CliqueState) bronKerbosch(r []string, p, x, skip []bool) {
+	if allFalse(p) && allFalse(x) {
+		s.updateMaxClique(r)
+		return
 	}
 
-	// Start recursion
-	bronKerbosch([]string{}, p, x, skip)
+	pivot := s.findPivot(p, x)
 
-	return maxClique
+	for v := range s.computers {
+		if !p[v] || (pivot != -1 && s.graph[s.computers[pivot]][s.computers[v]]) {
+			continue
+		}
+		if skip[v] {
+			continue
+		}
+
+		newR, newP, newX := s.bronKerboschStep(r, p, x, v)
+		s.bronKerbosch(newR, newP, newX, skip)
+
+		p[v] = false
+		x[v] = true
+	}
+}
+
+// hasComputerStartingWith checks if any computer in the set starts with the given prefix
+func hasComputerStartingWith(computers []string, prefix string) bool {
+	for _, comp := range computers {
+		if strings.HasPrefix(comp, prefix) {
+			return true
+		}
+	}
+	return false
 }
 
 // allFalse returns true if all values in the slice are false
@@ -156,7 +211,6 @@ func allFalse(arr []bool) bool {
 
 func part1(input []string) int {
 	graph := make(Graph)
-
 	for _, line := range input {
 		connection := strings.Split(line, "-")
 		if len(connection) != 2 {
@@ -170,24 +224,12 @@ func part1(input []string) int {
 		computers = append(computers, computer)
 	}
 
+	triples := graph.findTripleConnections(computers)
+
 	count := 0
-	for i := 0; i < len(computers); i++ {
-		for j := i + 1; j < len(computers); j++ {
-			for k := j + 1; k < len(computers); k++ {
-				set := []string{computers[i], computers[j], computers[k]}
-				if graph.areConnected(set) {
-					hasT := false
-					for _, comp := range set {
-						if strings.HasPrefix(comp, "t") {
-							hasT = true
-							break
-						}
-					}
-					if hasT {
-						count++
-					}
-				}
-			}
+	for _, triple := range triples {
+		if hasComputerStartingWith(triple, "t") {
+			count++
 		}
 	}
 
@@ -205,9 +247,7 @@ func part2(input []string) string {
 	}
 
 	maxClique := graph.findMaxClique()
-
 	sort.Strings(maxClique)
-
 	return strings.Join(maxClique, ",")
 }
 
