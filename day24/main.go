@@ -1,10 +1,8 @@
 package main
 
 import (
-	"bufio"
-	"fmt"
+	"aoc2024/utility"
 	"log"
-	"os"
 	"regexp"
 	"sort"
 	"strconv"
@@ -17,46 +15,37 @@ type dependency struct {
 	op     string
 }
 
-func main() {
-	value, dependencies := parseInput("input.txt")
-	fmt.Println("Part One:", partOne(value, dependencies))
-	fmt.Println("Part Two:", partTwo(dependencies))
-}
-
-func parseInput(name string) (map[string]int8, map[string]dependency) {
-	// Pre-compile regexes for efficiency
+func parseInput(input []string) (map[string]int8, map[string]dependency) {
 	instrRegex := regexp.MustCompile(`([a-z0-9]*) ([A-Z]*) ([a-z0-9]*) -> ([a-z0-9]*)`)
 	wireValueRegex := regexp.MustCompile(`([a-zA-Z0-9]*): ([0-9])`)
 
-	file, err := os.Open(name)
-	if err != nil {
-		log.Fatal(err)
-	}
-	defer file.Close()
-
-	sc := bufio.NewScanner(file)
 	value := make(map[string]int8)
 	dependencies := make(map[string]dependency)
+	parsingValues := true
 
-	// Parse initial wire values
-	for sc.Scan() && sc.Text() != "" {
-		matches := wireValueRegex.FindStringSubmatch(sc.Text())
-		w := matches[1]
-		v := int8(matches[2][0] - '0')
-		value[w] = v
-	}
+	for _, line := range input {
+		line = strings.TrimSpace(line)
+		if line == "" {
+			parsingValues = false
+			continue
+		}
 
-	// Parse gate dependencies
-	for sc.Scan() {
-		matches := instrRegex.FindStringSubmatch(sc.Text())
-		w := matches[4]
-		op := matches[2]
-		w1, w2 := matches[1], matches[3]
+		if parsingValues {
+			matches := wireValueRegex.FindStringSubmatch(line)
+			w := matches[1]
+			v := int8(matches[2][0] - '0')
+			value[w] = v
+		} else {
+			matches := instrRegex.FindStringSubmatch(line)
+			w := matches[4]
+			op := matches[2]
+			w1, w2 := matches[1], matches[3]
 
-		dependencies[w] = dependency{
-			w1: w1,
-			w2: w2,
-			op: op,
+			dependencies[w] = dependency{
+				w1: w1,
+				w2: w2,
+				op: op,
+			}
 		}
 	}
 
@@ -149,7 +138,6 @@ func partTwo(dependencies map[string]dependency) string {
 		}
 	}
 
-	// Convert map to sorted slice and join with commas
 	ans := make([]string, 0, len(temp))
 	for w := range temp {
 		ans = append(ans, w)
@@ -157,4 +145,14 @@ func partTwo(dependencies map[string]dependency) string {
 	sort.Strings(ans)
 
 	return strings.Join(ans, ",")
+}
+
+func main() {
+	input, err := utility.ParseTextFile("input")
+	if err != nil {
+		log.Fatal(err)
+	}
+	value, dependencies := parseInput(input)
+	log.Println("Part One:", partOne(value, dependencies))
+	log.Println("Part Two:", partTwo(dependencies))
 }
