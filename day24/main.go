@@ -15,6 +15,12 @@ var (
 	wireValueRegex = regexp.MustCompile(`([a-zA-Z0-9]*): ([0-9])`)
 )
 
+const (
+	andGate = "AND"
+	orGate  = "OR"
+	xorGate = "XOR"
+)
+
 // dependency represents a logical gate operation
 type dependency struct {
 	w1, w2 string
@@ -56,7 +62,7 @@ func parseInput(input []string) (map[string]int8, map[string]dependency, error) 
 			w1, w2 := matches[1], matches[3]
 
 			// Validate operation type
-			if op != "AND" && op != "OR" && op != "XOR" {
+			if op != andGate && op != orGate && op != xorGate {
 				return nil, nil, fmt.Errorf("invalid operation type at line %d: %s", lineNum+1, op)
 			}
 
@@ -84,11 +90,11 @@ func partOne(value map[string]int8, dependencies map[string]dependency) (res uin
 		v2 := resolve(d.w2)
 
 		switch d.op {
-		case "XOR":
+		case xorGate:
 			value[curr] = v1 ^ v2
-		case "AND":
+		case andGate:
 			value[curr] = v1 & v2
-		case "OR":
+		case orGate:
 			value[curr] = v1 | v2
 		}
 
@@ -108,7 +114,7 @@ func partOne(value map[string]int8, dependencies map[string]dependency) (res uin
 		}
 	}
 
-	return
+	return res
 }
 
 func isXOrY(wire string) bool {
@@ -123,18 +129,18 @@ func partTwo(dependencies map[string]dependency) string {
 		// Rule 1: Check z-wires that aren't XOR gates (except z45)
 		if w[0] == 'z' {
 			val, _ := strconv.Atoi(w[1:])
-			if d.op != "XOR" && val != 45 {
+			if d.op != xorGate && val != 45 {
 				temp[w] = true
 			}
-		} else if !isXOrY(d.w1) && !isXOrY(d.w2) && d.w1[0] != d.w2[0] && d.op == "XOR" {
+		} else if !isXOrY(d.w1) && !isXOrY(d.w2) && d.w1[0] != d.w2[0] && d.op == xorGate {
 			temp[w] = true
 		}
 
 		// Rule 2: Check XOR gates with x/y inputs from different series
-		if d.op == "XOR" && isXOrY(d.w1) && isXOrY(d.w2) && d.w1[0] != d.w2[0] {
+		if d.op == xorGate && isXOrY(d.w1) && isXOrY(d.w2) && d.w1[0] != d.w2[0] {
 			isValid := false
 			for _, dp := range dependencies {
-				if dp.op == "XOR" && (dp.w1 == w || dp.w2 == w) {
+				if dp.op == xorGate && (dp.w1 == w || dp.w2 == w) {
 					isValid = true
 				}
 			}
@@ -144,10 +150,10 @@ func partTwo(dependencies map[string]dependency) string {
 		}
 
 		// Rule 3: Check AND gates with x/y inputs from different series
-		if d.op == "AND" && isXOrY(d.w1) && isXOrY(d.w2) && d.w1[0] != d.w2[0] {
+		if d.op == andGate && isXOrY(d.w1) && isXOrY(d.w2) && d.w1[0] != d.w2[0] {
 			isValid := false
 			for _, dp := range dependencies {
-				if dp.op == "OR" && (dp.w1 == w || dp.w2 == w) {
+				if dp.op == orGate && (dp.w1 == w || dp.w2 == w) {
 					isValid = true
 				}
 			}
@@ -178,6 +184,6 @@ func main() {
 		log.Fatal("Failed to parse input:", err)
 	}
 
-	fmt.Println("Part One:", partOne(value, dependencies))
-	fmt.Println("Part Two:", partTwo(dependencies))
+	log.Println("Part One:", partOne(value, dependencies))
+	log.Println("Part Two:", partTwo(dependencies))
 }
