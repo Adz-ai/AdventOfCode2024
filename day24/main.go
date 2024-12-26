@@ -2,6 +2,7 @@ package main
 
 import (
 	"aoc2024/utility"
+	"fmt"
 	"log"
 	"regexp"
 	"sort"
@@ -15,15 +16,21 @@ type dependency struct {
 	op     string
 }
 
-func parseInput(input []string) (map[string]int8, map[string]dependency) {
+func parseInput(input []string) (map[string]int8, map[string]dependency, error) {
+	// Pre-compile regexes for efficiency
 	instrRegex := regexp.MustCompile(`([a-z0-9]*) ([A-Z]*) ([a-z0-9]*) -> ([a-z0-9]*)`)
 	wireValueRegex := regexp.MustCompile(`([a-zA-Z0-9]*): ([0-9])`)
+
+	if len(input) == 0 {
+		return nil, nil, fmt.Errorf("empty input")
+	}
 
 	value := make(map[string]int8)
 	dependencies := make(map[string]dependency)
 	parsingValues := true
 
-	for _, line := range input {
+	// Parse line by line
+	for lineNum, line := range input {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			parsingValues = false
@@ -32,14 +39,25 @@ func parseInput(input []string) (map[string]int8, map[string]dependency) {
 
 		if parsingValues {
 			matches := wireValueRegex.FindStringSubmatch(line)
+			if matches == nil || len(matches) != 3 {
+				return nil, nil, fmt.Errorf("invalid wire value format at line %d: %s", lineNum+1, line)
+			}
 			w := matches[1]
 			v := int8(matches[2][0] - '0')
 			value[w] = v
 		} else {
 			matches := instrRegex.FindStringSubmatch(line)
+			if matches == nil || len(matches) != 5 {
+				return nil, nil, fmt.Errorf("invalid instruction format at line %d: %s", lineNum+1, line)
+			}
 			w := matches[4]
 			op := matches[2]
 			w1, w2 := matches[1], matches[3]
+
+			// Validate operation type
+			if op != "AND" && op != "OR" && op != "XOR" {
+				return nil, nil, fmt.Errorf("invalid operation type at line %d: %s", lineNum+1, op)
+			}
 
 			dependencies[w] = dependency{
 				w1: w1,
@@ -49,7 +67,7 @@ func parseInput(input []string) (map[string]int8, map[string]dependency) {
 		}
 	}
 
-	return value, dependencies
+	return value, dependencies, nil
 }
 
 func partOne(value map[string]int8, dependencies map[string]dependency) (res uint64) {
@@ -138,6 +156,7 @@ func partTwo(dependencies map[string]dependency) string {
 		}
 	}
 
+	// Convert map to sorted slice and join with commas
 	ans := make([]string, 0, len(temp))
 	for w := range temp {
 		ans = append(ans, w)
@@ -152,7 +171,12 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	value, dependencies := parseInput(input)
-	log.Println("Part One:", partOne(value, dependencies))
-	log.Println("Part Two:", partTwo(dependencies))
+
+	value, dependencies, err := parseInput(input)
+	if err != nil {
+		log.Fatal("Failed to parse input:", err)
+	}
+
+	fmt.Println("Part One:", partOne(value, dependencies))
+	fmt.Println("Part Two:", partTwo(dependencies))
 }
