@@ -10,6 +10,11 @@ import (
 	"strings"
 )
 
+var (
+	instrRegex     = regexp.MustCompile(`([a-z0-9]*) ([A-Z]*) ([a-z0-9]*) -> ([a-z0-9]*)`)
+	wireValueRegex = regexp.MustCompile(`([a-zA-Z0-9]*): ([0-9])`)
+)
+
 // dependency represents a logical gate operation
 type dependency struct {
 	w1, w2 string
@@ -17,10 +22,6 @@ type dependency struct {
 }
 
 func parseInput(input []string) (map[string]int8, map[string]dependency, error) {
-	// Pre-compile regexes for efficiency
-	instrRegex := regexp.MustCompile(`([a-z0-9]*) ([A-Z]*) ([a-z0-9]*) -> ([a-z0-9]*)`)
-	wireValueRegex := regexp.MustCompile(`([a-zA-Z0-9]*): ([0-9])`)
-
 	if len(input) == 0 {
 		return nil, nil, fmt.Errorf("empty input")
 	}
