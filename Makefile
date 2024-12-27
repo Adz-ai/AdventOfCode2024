@@ -9,7 +9,7 @@ YEAR := 2024
 DAY_DIRS := $(shell find . -type d -name "day*" | sort)
 
 # Default target
-.PHONY: all test lint run benchmark fetch-input help
+.PHONY: all test lint run benchmark fetch-input help benchmark-total
 all: test lint fetch-input run
 
 # Prevent make from removing intermediate files
@@ -65,6 +65,18 @@ benchmark:
 			echo "No main.go found in $$dir, skipping..."; \
 		fi; \
 	done
+
+benchmark-total:
+	@echo "##### Measuring total execution time for all solutions combined... #####"
+	@total_start=$$(date +%s.%N); \
+	for dir in $(DAY_DIRS); do \
+		if [ -f "$$dir/main.go" ]; then \
+			(cd "$$dir" && go run main.go > /dev/null 2>&1) || exit $$?; \
+		fi; \
+	done; \
+	total_end=$$(date +%s.%N); \
+	total_time=$$(echo "$$total_end - $$total_start" | bc); \
+	echo "Total execution time: $$total_time seconds"
 
 fetch-input:
 	@echo "##### Fetching input for each day folder... #####"
