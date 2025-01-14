@@ -110,7 +110,8 @@ func partOne(value map[string]int8, dependencies map[string]dependency) (res uin
 	for n, v := range value {
 		if n[0] == 'z' {
 			temp, _ := strconv.Atoi(n[1:])
-			res |= uint64(v) << temp
+			res |= uint64(v) << temp //nolint: gosec
+			// linter suppressed due to false positive; v is from int8, temp is from z-wire index
 		}
 	}
 
