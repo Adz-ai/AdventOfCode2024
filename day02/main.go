@@ -4,7 +4,7 @@ import (
 	"log"
 	"strings"
 
-	"aoc2024/utility"
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 func isSafe(report []int) bool {

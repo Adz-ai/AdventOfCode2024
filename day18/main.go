@@ -1,11 +1,12 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"fmt"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 const size = 71

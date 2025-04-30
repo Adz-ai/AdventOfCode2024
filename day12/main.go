@@ -1,8 +1,9 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"log"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 // Point represents a position in the garden

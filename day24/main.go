@@ -1,13 +1,14 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"fmt"
 	"log"
 	"regexp"
 	"sort"
 	"strconv"
 	"strings"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 var (
@@ -27,7 +28,7 @@ type dependency struct {
 	op     string
 }
 
-func parseInput(input []string) (map[string]int8, map[string]dependency, error) {
+func parseInput(input []string) (map[string]int8, map[string]dependency, error) { //nolint: gocyclo
 	if len(input) == 0 {
 		return nil, nil, fmt.Errorf("empty input")
 	}
@@ -123,7 +124,7 @@ func isXOrY(wire string) bool {
 	return (wire[0] == 'x' || wire[0] == 'y') && temp != 0
 }
 
-func partTwo(dependencies map[string]dependency) string {
+func partTwo(dependencies map[string]dependency) string { //nolint: gocyclo
 	temp := make(map[string]bool)
 
 	for w, d := range dependencies {

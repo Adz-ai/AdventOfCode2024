@@ -1,10 +1,11 @@
 package main
 
 import (
-	. "aoc2024/utility"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 type Coordinates struct {
@@ -31,7 +32,7 @@ func getPresses(input []string, start string, coordMap map[string]Coordinates, p
 		horizontal := make([]string, 0)
 		vertical := make([]string, 0)
 
-		for i := 0; i < Abs(diffX); i++ {
+		for i := 0; i < utility.Abs(diffX); i++ {
 			if diffX >= 0 {
 				horizontal = append(horizontal, ">")
 			} else {
@@ -39,7 +40,7 @@ func getPresses(input []string, start string, coordMap map[string]Coordinates, p
 			}
 		}
 
-		for i := 0; i < Abs(diffY); i++ {
+		for i := 0; i < utility.Abs(diffY); i++ {
 			if diffY >= 0 {
 				vertical = append(vertical, "^")
 			} else {
@@ -165,7 +166,7 @@ func main() {
 		">": {2, 0},
 	}
 
-	input, err := ParseTextFile("input")
+	input, err := utility.ParseTextFile("input")
 	if err != nil {
 		log.Fatal(err)
 	}

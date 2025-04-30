@@ -1,11 +1,12 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"fmt"
 	"log"
 	"regexp"
 	"strconv"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 func processMultiplication(match []string) (int, error) {

@@ -1,9 +1,10 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"errors"
 	"log"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 // Board represents the warehouse grid state

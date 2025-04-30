@@ -1,12 +1,13 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"fmt"
 	"log"
 	"math"
 	"slices"
 	"strings"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 func parseInput(input []string) ([]uint64, uint64, error) {

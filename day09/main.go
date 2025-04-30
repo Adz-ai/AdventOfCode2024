@@ -1,9 +1,10 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"log"
 	"strconv"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 // File represents a file on the disk with its metadata

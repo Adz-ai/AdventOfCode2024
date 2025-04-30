@@ -1,11 +1,12 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"fmt"
 	"log"
 	"regexp"
 	"strings"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 func solve(input []string) (int, int) {

@@ -1,8 +1,9 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"log"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 func parseInput(input []string) ([][]int, [][]int) {
@@ -105,5 +106,4 @@ func main() {
 		log.Fatal(err)
 	}
 	log.Println(part1(input))
-	//log.Println(part2(input))
 }

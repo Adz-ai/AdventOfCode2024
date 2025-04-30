@@ -1,10 +1,11 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"fmt"
 	"log"
 	"strings"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 // Rule represents a directed edge in the dependency graph where 'before' must precede 'after'

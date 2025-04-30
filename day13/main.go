@@ -1,10 +1,11 @@
 package main
 
 import (
-	"aoc2024/utility"
 	"log"
 	"strconv"
 	"strings"
+
+	"github.com/Adz-azi/AdventOfCode2024/utility"
 )
 
 type system struct {
