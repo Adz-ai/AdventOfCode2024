@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/Adz-azi/AdventOfCode2024/utility"
+	"github.com/Adz-ai/AdventOfCode2024/utility"
 )
 
 func solve(input []string) (int, int) {

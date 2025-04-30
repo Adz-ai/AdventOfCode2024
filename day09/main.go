@@ -4,7 +4,7 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/Adz-azi/AdventOfCode2024/utility"
+	"github.com/Adz-ai/AdventOfCode2024/utility"
 )
 
 // File represents a file on the disk with its metadata

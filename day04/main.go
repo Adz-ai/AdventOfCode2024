@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Adz-azi/AdventOfCode2024/utility"
+	"github.com/Adz-ai/AdventOfCode2024/utility"
 )
 
 // Position represents a 2D coordinate in the grid with row and column values.

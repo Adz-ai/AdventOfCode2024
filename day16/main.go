@@ -4,7 +4,7 @@ import (
 	"image"
 	"log"
 
-	"github.com/Adz-azi/AdventOfCode2024/utility"
+	"github.com/Adz-ai/AdventOfCode2024/utility"
 )
 
 type State struct {

@@ -3,7 +3,7 @@ package main
 import (
 	"log"
 
-	"github.com/Adz-azi/AdventOfCode2024/utility"
+	"github.com/Adz-ai/AdventOfCode2024/utility"
 )
 
 const UP = 0
