@@ -1,44 +1,51 @@
+version: "2"
 run:
-  timeout: 5m
-  issues-exit-code: 1 # Exit code for issues, 0 means no linting issues
-
+  issues-exit-code: 1
 linters:
   enable:
-    - copyloopvar   # Warns about copy loop variables
-    - dupl          # Detects duplicated code
-    - errcheck      # Checks that error return values are used
-    - errname       # Checks that error names are consistent
-    - forbidigo      # Checks for forbidden imports
-    - goconst       # Suggests using constants for repeated literals
-    - goconst       # Suggests using constants for repeated literals
-    - gocritic       # Checks for common Go issues
-    - gocyclo       # Reports functions with high complexity
-    - gofmt         # Checks for formatting issues
-    - goimports     # Ensures imports are sorted and formatted
-    - gosec         # Finds potential security issues
-    - gosimple      # Simplifies Go code
-    - govet         # Reports suspicious constructs
-    - ineffassign   # Detects assignments to unused variables
-    - lll           # Enforces line length limit
-    - nakedret      # Warns about naked returns in functions
-    - nolintlint    # Checks that //nolint directives are used properly
-    - prealloc      # Suggests preallocating slices
-    - staticcheck   # Includes a collection of best-practice checks
-    - unparam       # Finds unused function parameters
-    - unused        # Checks for unused code
-    - mirror        # Checks for mirror imports
-    - misspell      # Checks for misspelled words
-    - nakedret      # Warns about naked returns in functions
-    - usestdlibvars # Checks for variable names that collide with names in the standard library
-
-linters-settings:
-  gocyclo:
-    min-complexity: 10 # Report functions with complexity over this threshold
-  lll:
-    line-length: 120 # Maximum line length
-  prealloc:
-    simple: true     # Preallocate slices if possible
-  errcheck:
-    check-type-assertions: true # Check for ignored type assertion errors
-
-
+    - copyloopvar
+    - dupl
+    - errname
+    - forbidigo
+    - goconst
+    - gocritic
+    - gocyclo
+    - gosec
+    - lll
+    - mirror
+    - misspell
+    - nakedret
+    - nolintlint
+    - prealloc
+    - unparam
+    - usestdlibvars
+  settings:
+    errcheck:
+      check-type-assertions: true
+    gocyclo:
+      min-complexity: 10
+    lll:
+      line-length: 120
+    prealloc:
+      simple: true
+  exclusions:
+    generated: lax
+    presets:
+      - comments
+      - common-false-positives
+      - legacy
+      - std-error-handling
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - third_party$
+      - builtin$
+      - examples$
